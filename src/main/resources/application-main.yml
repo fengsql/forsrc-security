@@ -1,0 +1,35 @@
+application:
+  port: 8081
+  name: dpi
+
+datasource:
+  name: mysql
+  mysql:
+    url: jdbc:mysql://47.103.65.29:3999/dpi_gp?serverTimezone=PRC&autoReconnect=true&characterEncoding=utf8&useUnicode=true&useSSL=false
+    username: dbuser
+    password: dpG!0U3g#6Hz
+    driver: com.mysql.cj.jdbc.Driver
+  gp:
+    url: jdbc:pivotal:greenplum://47.103.65.29:5510;DatabaseName=dpi
+    username: gpadmin
+    password: admin123
+    driver: com.pivotal.jdbc.GreenplumDriver
+
+log:
+  level:
+    root: info
+    dao: debug
+  file: /home/dpi/log/dpi.log
+
+websocket:
+  enable: true
+  port: 8011
+  # minute
+  message-timeout: 30
+  #second
+  login-timeout: 30
+
+jwt:
+  secret: secret
+  expiration: 7200000
+  token: Authorization
