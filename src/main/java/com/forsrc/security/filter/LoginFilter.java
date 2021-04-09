@@ -38,10 +38,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
   }
 
   @Override
-  protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-    IUserDetails userDetails = (IUserDetails) authResult.getPrincipal();
+  protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException, ServletException {
+    IUserDetails userDetails = (IUserDetails) authentication.getPrincipal();
 
-    String token = ToolToken.generateToken(authResult);
+    String token = ToolToken.generateToken(authentication);
     BLoginResponse loginResponse = userDetails.getLoginResponse();
     loginResponse.setToken(token);
     ToolResponse.write(response, loginResponse);
