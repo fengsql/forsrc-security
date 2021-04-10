@@ -73,7 +73,7 @@ public class ConfigSecurity {
   }
 
   //security-logoutUrl
-  @Value("${security.api-prefix:/api}")
+  @Value("${security.api-prefix:}")
   public void setSecurity_apiPrefix(String value) {
     security.apiPrefix = Tool.toString(value);
   }

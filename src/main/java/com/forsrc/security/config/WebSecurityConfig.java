@@ -1,5 +1,6 @@
 package com.forsrc.security.config;
 
+import com.forsrc.common.tool.Tool;
 import com.forsrc.security.base.IUserDetailsService;
 import com.forsrc.security.filter.AuthenticationFilter;
 import com.forsrc.security.filter.LoginFilter;
@@ -39,8 +40,6 @@ import java.util.Map;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @Slf4j
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-
-  private static final String apiPrefix_default = "/api";
 
   @Value("${security.enable:false}")
   private boolean enable;
@@ -175,10 +174,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   }
 
   private String getApiPatten() {
-    String apiPrefix = ConfigSecurity.security.apiPrefix;
-    if (apiPrefix == null) {
-      apiPrefix = apiPrefix_default;
-    }
+    String apiPrefix = Tool.toString(ConfigSecurity.security.apiPrefix);
     if (!apiPrefix.endsWith("/")) {
       apiPrefix += "/";
     }
