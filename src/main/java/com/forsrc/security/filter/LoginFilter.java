@@ -34,13 +34,13 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
   @SneakyThrows
   @Override
   public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+    log.info("attemptAuthentication.");
     return securityLoginService.login(request);
   }
 
   @Override
   protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException, ServletException {
     IUserDetails userDetails = (IUserDetails) authentication.getPrincipal();
-
     String token = ToolToken.generateToken(authentication);
     BLoginResponse loginResponse = userDetails.getLoginResponse();
     loginResponse.setToken(token);

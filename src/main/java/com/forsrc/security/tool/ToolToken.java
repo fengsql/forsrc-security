@@ -2,9 +2,11 @@ package com.forsrc.security.tool;
 
 import com.forsrc.security.config.ConfigSecurity;
 import com.forsrc.security.model.AuthenticationToken;
+import com.forsrc.security.model.SecurityUserDetails;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -13,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
 import java.util.*;
 
+@Slf4j
 public class ToolToken implements Serializable {
 
   private static final long serialVersionUID = 1L;
@@ -29,6 +32,10 @@ public class ToolToken implements Serializable {
    * 权限列表
    */
   private static final String AUTHORITIES = "authorities";
+  private static final String AUTHORITY = "authority";
+  private static final String AUTHORIZATION = "Authorization";
+  private static final String TOKEN = "token";
+  private static final String BEARER = "Bearer ";
 
   /**
    * 生成令牌
@@ -48,7 +55,7 @@ public class ToolToken implements Serializable {
    * @return 令牌
    */
   private static String generateToken(Map<String, Object> claims) {
-    int expire = ConfigSecurity.security.token.expire;
+    long expire = ConfigSecurity.security.token.expire * 1000;
     Date expirationDate = new Date(System.currentTimeMillis() + expire);
     String secret = ConfigSecurity.security.token.secret;
     return Jwts.builder().setClaims(claims).setExpiration(expirationDate).signWith(SignatureAlgorithm.HS512, secret).compact();
@@ -74,40 +81,47 @@ public class ToolToken implements Serializable {
    * 根据请求令牌获取登录认证信息
    * @return 用户名
    */
-  public static Authentication getAuthenticationeFromToken(HttpServletRequest request) {
-    Authentication authentication = null;
-    // 获取请求携带的令牌
-    String token = ToolToken.getToken(request);
-    if (token != null) {
-      // 请求令牌不能为空
-      if (ToolSecurity.getAuthentication() == null) {
-        // 上下文中Authentication为空
-        Claims claims = getClaimsFromToken(token);
-        if (claims == null) {
-          return null;
-        }
-        String username = claims.getSubject();
-        if (username == null) {
-          return null;
-        }
-        if (isTokenExpired(token)) {
-          return null;
-        }
-        Object authors = claims.get(AUTHORITIES);
-        List<GrantedAuthority> authorities = new ArrayList<>();
-        if (authors instanceof List) {
-          for (Object object : (List) authors) {
-            authorities.add(new SimpleGrantedAuthority((String) ((Map) object).get("authority")));
-          }
-        }
-        authentication = new AuthenticationToken(username, null, authorities, token);
-      } else {
-        if (validateToken(token, ToolSecurity.getUsername())) {
-          // 如果上下文中Authentication非空，且请求令牌合法，直接返回当前登录认证信息
-          authentication = ToolSecurity.getAuthentication();
-        }
+  public static Authentication getAuthenticationFromToken(HttpServletRequest request) {
+    String token = getToken(request);
+    if (token == null) {
+      return null;
+    }
+    Authentication authentication = ToolSecurity.getAuthentication();
+    if (authentication == null) {
+      return getAuthenticationFromToken(token);
+    }
+    String username = ToolSecurity.getUsername(authentication);
+    if (validateToken(token, username)) {
+      return authentication;
+    } else {
+      return null;
+    }
+  }
+
+  private static Authentication getAuthenticationFromToken(String token) {
+    Claims claims = getClaimsFromToken(token);
+    if (claims == null) {
+      return null;
+    }
+    String username = claims.getSubject();
+    if (username == null) {
+      return null;
+    }
+    //    if (isTokenExpired(token)) {
+    //      return null;
+    //    }
+    Object authors = claims.get(AUTHORITIES);
+    List<GrantedAuthority> authorities = new ArrayList<>();
+    if (authors instanceof List) {
+      for (Object object : (List) authors) {
+        authorities.add(new SimpleGrantedAuthority((String) ((Map) object).get(AUTHORITY)));
       }
     }
+    SecurityUserDetails userDetails = new SecurityUserDetails();
+    userDetails.setUsername(username);
+    //    userDetails.setPassword(passwordEncoder.encode(user.getPassword()));
+    userDetails.setAuthorities(authorities);
+    Authentication authentication = new AuthenticationToken(userDetails, null, authorities, token);
     return authentication;
   }
 
@@ -122,6 +136,7 @@ public class ToolToken implements Serializable {
       String secret = ConfigSecurity.security.token.secret;
       claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
     } catch (Exception e) {
+      log.error("getClaimsFromToken error!", e);
       claims = null;
     }
     return claims;
@@ -132,7 +147,7 @@ public class ToolToken implements Serializable {
    */
   public static Boolean validateToken(String token, String username) {
     String userName = getUsernameFromToken(token);
-    return (userName.equals(username) && !isTokenExpired(token));
+    return userName != null && userName.equals(username);
   }
 
   /**
@@ -169,10 +184,10 @@ public class ToolToken implements Serializable {
    * 获取请求token
    */
   public static String getToken(HttpServletRequest request) {
-    String token = request.getHeader("Authorization");
-    String tokenHead = "Bearer ";
+    String token = request.getHeader(AUTHORIZATION);
+    String tokenHead = BEARER;
     if (token == null) {
-      token = request.getHeader("token");
+      token = request.getHeader(TOKEN);
     } else if (token.contains(tokenHead)) {
       token = token.substring(tokenHead.length());
     }

@@ -1,50 +1,49 @@
 package com.forsrc.security.tool;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.servlet.http.HttpServletRequest;
 
+@Slf4j
 public class ToolSecurity {
 
   /**
    * 获取令牌进行认证
    */
-  public static void checkAuthentication(HttpServletRequest request) {
-    // 获取令牌并根据令牌获取登录认证信息
-    Authentication authentication = ToolToken.getAuthenticationeFromToken(request);
-    // 设置登录认证信息到上下文
-    SecurityContextHolder.getContext().setAuthentication(authentication);
+  public static void setAuthentication(HttpServletRequest request) {
+    Authentication authentication = ToolToken.getAuthenticationFromToken(request); // 获取令牌并根据令牌获取登录认证信息
+    SecurityContextHolder.getContext().setAuthentication(authentication); // 设置登录认证信息到上下文
+    log.info("SecurityContextHolder.getContext().setAuthentication ok.");
   }
 
   /**
    * 获取当前用户名
    */
+  public static String getUsername(HttpServletRequest request) {
+    Authentication authentication = ToolToken.getAuthenticationFromToken(request);
+    return getUsername(authentication);
+  }
+
   public static String getUsername() {
-    String username = null;
     Authentication authentication = getAuthentication();
-    if (authentication != null) {
-      Object principal = authentication.getPrincipal();
-      if (principal != null && principal instanceof UserDetails) {
-        username = ((UserDetails) principal).getUsername();
-      }
-    }
-    return username;
+    return getUsername(authentication);
   }
 
   /**
    * 获取用户名
    */
   public static String getUsername(Authentication authentication) {
-    String username = null;
-    if (authentication != null) {
-      Object principal = authentication.getPrincipal();
-      if (principal != null && principal instanceof UserDetails) {
-        username = ((UserDetails) principal).getUsername();
-      }
+    if (authentication == null) {
+      return null;
     }
-    return username;
+    Object principal = authentication.getPrincipal();
+    if (principal instanceof UserDetails) {
+      return ((UserDetails) principal).getUsername();
+    }
+    return null;
   }
 
   /**
@@ -52,9 +51,12 @@ public class ToolSecurity {
    */
   public static Authentication getAuthentication() {
     if (SecurityContextHolder.getContext() == null) {
+      log.info("getAuthentication SecurityContextHolder.getContext() is null!");
       return null;
     }
-    return SecurityContextHolder.getContext().getAuthentication();
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    log.info("getAuthentication authentication: {}", authentication);
+    return authentication;
   }
 
 }

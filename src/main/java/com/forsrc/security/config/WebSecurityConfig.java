@@ -62,6 +62,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
       return;
     }
     log.info("WebSecurityConfig start.");
+
     http //
       .csrf().disable()  //禁用 Spring Security 自带的跨域处理
       .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)  //禁用session
@@ -78,10 +79,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
       .logoutSuccessHandler(logoutSuccessHandler)  //
       .and() //
       .authorizeRequests().antMatchers(HttpMethod.OPTIONS, "/**").anonymous();  //跨域预检请求
-    //      .and() //
-    //      .authorizeRequests().antMatchers(HttpMethod.POST, "/api/**").hasAnyRole();  //
 
     setAuthApi(http);
+    addAll(http);
     addRole(http);
     //
     http.authorizeRequests()  //
@@ -101,16 +101,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
       web.ignoring().antMatchers("/**");
       return;
     }
-    //    web.ignoring().antMatchers("/", "/*.html", "/**/*.js", "/**/*.css", "/**/*.jpg", "/**/*.png", "/**/*.gif", "/**.ico");
     addPermit(web);
-    //swagger
-    //    web.ignoring().antMatchers("/v2/api-docs",  //
-    //      "/swagger-resources/**",  //
-    //      "/configuration/ui",  //
-    //      "/configuration/security",  //
-    //      "/swagger-ui.html/**",  //
-    //      "/webjars/**",  //
-    //      "/definitions/**");
   }
 
   @Bean
@@ -156,10 +147,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   private void setAuthApi(HttpSecurity http) throws Exception {
     String apiPrefix = getApiPatten();
     if (ConfigSecurity.security.enable) {
-      http.authorizeRequests().antMatchers(HttpMethod.POST, apiPrefix).hasAnyRole();
+      http.authorizeRequests().antMatchers(HttpMethod.POST, apiPrefix).hasAnyAuthority();
     } else {
       http.authorizeRequests().antMatchers(HttpMethod.POST, apiPrefix).permitAll();
     }
+  }
+
+  private void addAll(HttpSecurity http) throws Exception {
+    if (ConfigSecurity.security.all == null) {
+      return;
+    }
+    http.authorizeRequests().antMatchers(ConfigSecurity.security.all.toArray(new String[0])).hasAnyAuthority();
   }
 
   private void addRole(HttpSecurity http) throws Exception {
@@ -169,7 +167,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     for (Map.Entry<String, List<String>> entry : ConfigSecurity.security.role.entrySet()) {
       String role = entry.getKey();
       List<String> path = entry.getValue();
-      http.authorizeRequests().antMatchers(path.toArray(new String[0])).hasAnyRole(role);
+      http.authorizeRequests().antMatchers(path.toArray(new String[0])).hasAnyRole(role); //.hasAnyRole(role);
+      log.info("addRole role: {}. path: {}", role, path);
     }
   }
 

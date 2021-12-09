@@ -1,14 +1,12 @@
 package com.forsrc.security.config;
 
 import com.forsrc.common.tool.Tool;
-import com.forsrc.common.tool.ToolBean;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import java.util.*;
 
 @Configuration
@@ -17,6 +15,9 @@ public class ConfigSecurity {
 
   private static final String sep_path = ",";
   private static final String sep_role = ":";
+
+  @Resource
+  private ConfigSecurityAuthPath configSecurityAuthPath;
 
   public static class security {
 
@@ -33,25 +34,16 @@ public class ConfigSecurity {
 
     public static List<String> permit;
 
+    public static List<String> all;
+
     public static Map<String, List<String>> role;
   }
 
   @PostConstruct
   private void setValue() {
-    ConfigSecurityAuthPath configSecurityAuthPath = ToolBean.getBean(ConfigSecurityAuthPath.class);
     setSecurity_permit(configSecurityAuthPath.getPermit());
+    setSecurity_all(configSecurityAuthPath.getAll());
     setSecurity_role(configSecurityAuthPath.getRole());
-  }
-
-  @Configuration
-  @ConfigurationProperties(prefix = "security")
-  @Data
-  public class ConfigSecurityAuthPath {
-
-    private List<String> permit;
-
-    public List<String> role;
-
   }
 
   //security-enable
@@ -108,6 +100,20 @@ public class ConfigSecurity {
     }
   }
 
+  private void setSecurity_all(List<String> value) {
+    if (value == null) {
+      return;
+    }
+    security.all = new ArrayList<>();
+    for (String one : value) {
+      if (Tool.isNull(one)) {
+        continue;
+      }
+      String[] paths = Tool.split(one, sep_path);
+      security.all.addAll(Arrays.asList(paths));
+    }
+  }
+
   private void setSecurity_role(List<String> value) {
     security.role = new HashMap<>();
     if (value == null) {
@@ -115,7 +121,7 @@ public class ConfigSecurity {
     }
     for (String one : value) {
       int pos = one.indexOf(sep_role);
-      if (pos <= 0) {
+      if (pos <= 0 || pos >= one.length() - 1) {
         continue;
       }
       String key = one.substring(0, pos);
@@ -126,11 +132,20 @@ public class ConfigSecurity {
       String[] paths = Tool.split(val, sep_path);
       List<String> list = security.role.get(key);
       if (list == null) {
-        security.role.put(key, Arrays.asList(paths));
+        security.role.put(key, newList(paths));
       } else {
         list.addAll(Arrays.asList(paths));
       }
     }
+  }
+
+  private List<String> newList(String[] ary) {
+    if (ary == null) {
+      return null;
+    }
+    List<String> list = new ArrayList<>();
+    Collections.addAll(list, ary);
+    return list;
   }
 
 }

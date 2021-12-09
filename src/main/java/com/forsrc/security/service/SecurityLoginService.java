@@ -6,6 +6,7 @@ import com.forsrc.security.model.AuthenticationToken;
 import com.forsrc.security.model.LoginRequest;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,6 +18,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 
 import javax.servlet.http.HttpServletRequest;
 
+@Slf4j
 public class SecurityLoginService {
   @Setter
   private UserDetailsService userDetailsService;
@@ -42,10 +44,9 @@ public class SecurityLoginService {
     }
     AuthenticationToken authenticationToken = getAuthenticationToken(userDetails, loginRequest, passwordEncoder);
     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
     Authentication authentication = authenticationManager.authenticate(authenticationToken);  //验证登录
-    
     SecurityContextHolder.getContext().setAuthentication(authentication);  // 认证成功存储认证信息到上下文
+    log.info("SecurityContextHolder.getContext().setAuthentication ok.");
     return authentication;
   }
 
