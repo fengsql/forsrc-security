@@ -1,5 +1,6 @@
 package com.forsrc.security.tool;
 
+import com.forsrc.common.tool.Tool;
 import com.forsrc.security.config.ConfigSecurity;
 import com.forsrc.security.model.AuthenticationToken;
 import com.forsrc.security.model.SecurityUserDetails;
@@ -24,6 +25,8 @@ public class ToolToken implements Serializable {
    * 用户名称
    */
   private static final String USERNAME = Claims.SUBJECT;
+  private static final String USERID = "userId";
+  private static final String ROLE = "role";
   /**
    * 创建时间
    */
@@ -37,13 +40,18 @@ public class ToolToken implements Serializable {
   private static final String TOKEN = "token";
   private static final String BEARER = "Bearer ";
 
+  private static final String attr_principal = "_principal";
+
   /**
    * 生成令牌
    * @return 令牌
    */
   public static String generateToken(Authentication authentication) {
     Map<String, Object> claims = new HashMap<>(3);
-    claims.put(USERNAME, ToolSecurity.getUsername(authentication));
+    SecurityUserDetails userDetails = ToolSecurity.getUserDetails(authentication);
+    claims.put(USERID, userDetails.getUserId());
+    claims.put(USERNAME, userDetails.getUsername());
+    claims.put(ROLE, userDetails.getRoleType());
     claims.put(CREATED, new Date());
     claims.put(AUTHORITIES, authentication.getAuthorities());
     return generateToken(claims);
@@ -88,7 +96,7 @@ public class ToolToken implements Serializable {
     }
     Authentication authentication = ToolSecurity.getAuthentication();
     if (authentication == null) {
-      return getAuthenticationFromToken(token);
+      return getAuthenticationFromToken(request, token);
     }
     String username = ToolSecurity.getUsername(authentication);
     if (validateToken(token, username)) {
@@ -98,7 +106,28 @@ public class ToolToken implements Serializable {
     }
   }
 
-  private static Authentication getAuthenticationFromToken(String token) {
+  private static Authentication getAuthenticationFromToken(HttpServletRequest request, String token) {
+    SecurityUserDetails userDetails = getUserDetailsFromToken(token);
+    if (userDetails == null) {
+      return null;
+    }
+    setUserDetails(request, userDetails);
+    return new AuthenticationToken(userDetails, null, userDetails.getAuthorities(), token);
+  }
+
+  private static void setUserDetails(HttpServletRequest request, SecurityUserDetails userDetails) {
+    request.setAttribute(attr_principal, userDetails);
+  }
+
+  public static SecurityUserDetails getUserDetails(HttpServletRequest request) {
+    Object principal = request.getAttribute(attr_principal);
+    if (principal instanceof SecurityUserDetails) {
+      return (SecurityUserDetails) principal;
+    }
+    return null;
+  }
+
+  private static SecurityUserDetails getUserDetailsFromToken(String token) {
     Claims claims = getClaimsFromToken(token);
     if (claims == null) {
       return null;
@@ -107,9 +136,8 @@ public class ToolToken implements Serializable {
     if (username == null) {
       return null;
     }
-    //    if (isTokenExpired(token)) {
-    //      return null;
-    //    }
+    int userId = Tool.toInt(claims.get(USERID));
+    int roleType = Tool.toInt(claims.get(ROLE));
     Object authors = claims.get(AUTHORITIES);
     List<GrantedAuthority> authorities = new ArrayList<>();
     if (authors instanceof List) {
@@ -118,11 +146,12 @@ public class ToolToken implements Serializable {
       }
     }
     SecurityUserDetails userDetails = new SecurityUserDetails();
+    userDetails.setUserId(userId);
+    userDetails.setRoleType(roleType);
     userDetails.setUsername(username);
     //    userDetails.setPassword(passwordEncoder.encode(user.getPassword()));
     userDetails.setAuthorities(authorities);
-    Authentication authentication = new AuthenticationToken(userDetails, null, authorities, token);
-    return authentication;
+    return userDetails;
   }
 
   /**

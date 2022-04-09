@@ -83,6 +83,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     setAuthApi(http);
     addAll(http);
     addRole(http);
+
     //
     http.authorizeRequests()  //
       .anyRequest().authenticated()  // 剩下所有的验证都需要验证

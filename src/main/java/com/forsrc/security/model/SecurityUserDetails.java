@@ -12,6 +12,10 @@ import java.util.Collection;
 @EqualsAndHashCode(callSuper = false)
 public class SecurityUserDetails implements IUserDetails {
 
+  private int userId;
+
+  private int roleType;
+
   private String username;
 
   private String password;

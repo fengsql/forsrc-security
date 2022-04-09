@@ -4,6 +4,7 @@ import com.forsrc.common.tool.Tool;
 import com.forsrc.common.tool.ToolJson;
 import com.forsrc.security.model.AuthenticationToken;
 import com.forsrc.security.model.LoginRequest;
+import com.forsrc.security.model.SecurityUserDetails;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +13,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 
@@ -38,20 +38,26 @@ public class SecurityLoginService {
   }
 
   private Authentication login(HttpServletRequest request, LoginRequest loginRequest) {
-    UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getUsername());
-    if (userDetails == null) {
-      throw new UsernameNotFoundException("not find username. username: " + loginRequest.getUsername());
-    }
-    AuthenticationToken authenticationToken = getAuthenticationToken(userDetails, loginRequest, passwordEncoder);
-    authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-    Authentication authentication = authenticationManager.authenticate(authenticationToken);  //验证登录
+    UserDetails userDetails = getUserDetails(loginRequest);
+    AuthenticationToken authenticationToken = getAuthenticationToken(request, userDetails, loginRequest);
+    //验证登录，调用 loadUserByUsername 方法
+    Authentication authentication = authenticationManager.authenticate(authenticationToken);
+    SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
     SecurityContextHolder.getContext().setAuthentication(authentication);  // 认证成功存储认证信息到上下文
     log.info("SecurityContextHolder.getContext().setAuthentication ok.");
     return authentication;
   }
 
-  private AuthenticationToken getAuthenticationToken(UserDetails userDetails, LoginRequest loginRequest, PasswordEncoder passwordEncoder) {
-    return new AuthenticationToken(userDetails, passwordEncoder.encode(loginRequest.getPassword()));
+  private AuthenticationToken getAuthenticationToken(HttpServletRequest request, UserDetails userDetails, LoginRequest loginRequest) {
+    AuthenticationToken authenticationToken = new AuthenticationToken(userDetails, loginRequest.getPassword());
+    authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+    return authenticationToken;
+  }
+
+  private UserDetails getUserDetails(LoginRequest loginRequest) {
+    SecurityUserDetails securityUserDetails = new SecurityUserDetails();
+    securityUserDetails.setUsername(loginRequest.getUsername());
+    return securityUserDetails;
   }
 
 }

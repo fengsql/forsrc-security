@@ -18,7 +18,7 @@ import java.io.IOException;
 public class UnauthenticationHandler implements AuthenticationEntryPoint {
   @Override
   public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
-    log.info("AuthenticationEntryPoint. url: {}. msg: {}", request.getRequestURI(), exception.getMessage());
+    log.info("UnauthenticationHandler. url: {}. msg: {}", request.getRequestURI(), exception.getMessage());
     ToolResponse.error(response, Code.AUTHENTICATION_EMPTY);
   }
 }

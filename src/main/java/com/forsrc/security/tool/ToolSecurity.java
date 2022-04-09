@@ -17,13 +17,16 @@ public class ToolSecurity {
   public static void setAuthentication(HttpServletRequest request) {
     Authentication authentication = ToolToken.getAuthenticationFromToken(request); // 获取令牌并根据令牌获取登录认证信息
     SecurityContextHolder.getContext().setAuthentication(authentication); // 设置登录认证信息到上下文
-    log.info("SecurityContextHolder.getContext().setAuthentication ok.");
   }
 
   /**
    * 获取当前用户名
    */
   public static SecurityUserDetails getUserDetails(HttpServletRequest request) {
+    SecurityUserDetails userDetails = ToolToken.getUserDetails(request);
+    if (userDetails != null) {
+      return userDetails;
+    }
     Authentication authentication = ToolToken.getAuthenticationFromToken(request);
     return getUserDetails(authentication);
   }
@@ -74,11 +77,11 @@ public class ToolSecurity {
    */
   public static Authentication getAuthentication() {
     if (SecurityContextHolder.getContext() == null) {
-      log.info("getAuthentication SecurityContextHolder.getContext() is null!");
       return null;
     }
+    SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    log.info("getAuthentication authentication: {}", authentication);
+//    log.info("getAuthentication authentication: {}", authentication);
     return authentication;
   }
 
