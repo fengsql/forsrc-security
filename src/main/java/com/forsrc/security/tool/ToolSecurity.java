@@ -1,6 +1,6 @@
 package com.forsrc.security.tool;
 
-import com.forsrc.security.model.SecurityUserDetails;
+import com.forsrc.security.model.UserDetail;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,42 +12,29 @@ import javax.servlet.http.HttpServletRequest;
 public class ToolSecurity {
 
   /**
-   * 获取令牌进行认证
+   * 设置授权信息。
    */
   public static void setAuthentication(HttpServletRequest request) {
-    Authentication authentication = ToolToken.getAuthenticationFromToken(request); // 获取令牌并根据令牌获取登录认证信息
-    SecurityContextHolder.getContext().setAuthentication(authentication); // 设置登录认证信息到上下文
+    Authentication authentication = ToolToken.getAuthenticationFromToken(request); // 获取令牌并根据令牌获取授权信息
+    SecurityContextHolder.getContext().setAuthentication(authentication); // 设置授权信息到上下文
   }
 
   /**
    * 获取当前用户名
    */
-  public static SecurityUserDetails getUserDetails(HttpServletRequest request) {
-    SecurityUserDetails userDetails = ToolToken.getUserDetails(request);
-    if (userDetails != null) {
-      return userDetails;
+  public static UserDetail getUserDetails() {
+    Authentication authentication = getAuthentication();
+    if (authentication == null) {
+      return null;
     }
-    Authentication authentication = ToolToken.getAuthenticationFromToken(request);
     return getUserDetails(authentication);
   }
 
   /**
    * 获取当前用户名
    */
-  public static String getUsername(HttpServletRequest request) {
-    Authentication authentication = ToolToken.getAuthenticationFromToken(request);
-    return getUsername(authentication);
-  }
-
   public static String getUsername() {
     Authentication authentication = getAuthentication();
-    return getUsername(authentication);
-  }
-
-  /**
-   * 获取用户名
-   */
-  public static String getUsername(Authentication authentication) {
     if (authentication == null) {
       return null;
     }
@@ -61,13 +48,13 @@ public class ToolSecurity {
   /**
    * 获取用户名
    */
-  public static SecurityUserDetails getUserDetails(Authentication authentication) {
+  public static UserDetail getUserDetails(Authentication authentication) {
     if (authentication == null) {
       return null;
     }
     Object principal = authentication.getPrincipal();
-    if (principal instanceof SecurityUserDetails) {
-      return (SecurityUserDetails) principal;
+    if (principal instanceof UserDetail) {
+      return (UserDetail) principal;
     }
     return null;
   }
@@ -79,10 +66,7 @@ public class ToolSecurity {
     if (SecurityContextHolder.getContext() == null) {
       return null;
     }
-    SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//    log.info("getAuthentication authentication: {}", authentication);
-    return authentication;
+    return SecurityContextHolder.getContext().getAuthentication();
   }
 
 }

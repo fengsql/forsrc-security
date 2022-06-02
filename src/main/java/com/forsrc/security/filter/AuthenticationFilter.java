@@ -20,7 +20,7 @@ public class AuthenticationFilter extends BasicAuthenticationFilter {
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-//    log.info("doFilterInternal.");
+    log.info("AuthenticationFilter.");
     ToolSecurity.setAuthentication(request);
     chain.doFilter(request, response);
   }

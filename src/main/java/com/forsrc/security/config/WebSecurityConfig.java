@@ -1,7 +1,6 @@
 package com.forsrc.security.config;
 
 import com.forsrc.common.tool.Tool;
-import com.forsrc.security.base.IUserDetailsService;
 import com.forsrc.security.filter.AuthenticationFilter;
 import com.forsrc.security.filter.LoginFilter;
 import com.forsrc.security.handler.AuthenticationDeniedHandler;
@@ -20,8 +19,6 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -50,10 +47,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   private UnauthenticationHandler unauthenticationHandler;
   @Resource
   private SecurityLogoutHandler logoutSuccessHandler;
-  @Resource
-  private IUserDetailsService userDetailsService;
-  @Resource
-  private PasswordEncoder passwordEncoder;
+//  @Resource
+//  private IUserDetailsService userDetailsService;
+//  @Resource
+//  private PasswordEncoder passwordEncoder;
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
@@ -119,20 +116,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   }
 
   private Filter getLoginFilter() throws Exception {
-    PasswordEncoder passwordEncoder = getPasswordEncoder();
     SecurityLoginService securityLoginService = new SecurityLoginService();
     securityLoginService.setAuthenticationManager(authenticationManager());
-    securityLoginService.setUserDetailsService(userDetailsService);
-    securityLoginService.setPasswordEncoder(passwordEncoder);
     return new LoginFilter(securityLoginService);
   }
 
-  private PasswordEncoder getPasswordEncoder() {
-    if (passwordEncoder == null) {
-      passwordEncoder = NoOpPasswordEncoder.getInstance();
-    }
-    return passwordEncoder;
-  }
+//  private PasswordEncoder getPasswordEncoder() {
+//    if (passwordEncoder == null) {
+//      passwordEncoder = NoOpPasswordEncoder.getInstance();
+//    }
+//    return passwordEncoder;
+//  }
 
   private Filter getAuthenticationFilter() throws Exception {
     return new AuthenticationFilter(authenticationManager());

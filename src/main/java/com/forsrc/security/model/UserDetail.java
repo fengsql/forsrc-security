@@ -10,7 +10,7 @@ import java.util.Collection;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class SecurityUserDetails implements IUserDetails {
+public class UserDetail implements IUserDetails {
 
   private int userId;
 

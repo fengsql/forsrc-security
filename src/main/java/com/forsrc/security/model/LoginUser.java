@@ -3,7 +3,7 @@ package com.forsrc.security.model;
 import lombok.Data;
 
 @Data
-public class LoginRequest {
+public class LoginUser {
 
 	private String username;
 	
