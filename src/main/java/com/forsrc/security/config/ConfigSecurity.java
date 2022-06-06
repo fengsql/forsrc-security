@@ -29,7 +29,7 @@ public class ConfigSecurity {
     public static class token {
       public static String name;
       public static String secret;
-      public static int expire;
+      public static String expire;
     }
 
     public static List<String> permit;
@@ -83,7 +83,7 @@ public class ConfigSecurity {
 
   @Value("${security.token.expire:3600}")
   public void setSecurity_token_expire(String value) {
-    security.token.expire = Tool.toInt(value);
+    security.token.expire = Tool.toString(value);
   }
 
   private void setSecurity_permit(List<String> value) {

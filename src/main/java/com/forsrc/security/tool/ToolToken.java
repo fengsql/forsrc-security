@@ -3,6 +3,7 @@ package com.forsrc.security.tool;
 import com.forsrc.common.constant.Code;
 import com.forsrc.common.exception.CommonException;
 import com.forsrc.common.tool.Tool;
+import com.forsrc.common.tool.ToolJson;
 import com.forsrc.security.config.ConfigSecurity;
 import com.forsrc.security.model.AuthenticationToken;
 import com.forsrc.security.model.UserDetail;
@@ -20,9 +21,9 @@ import java.util.*;
 
 @Slf4j
 public class ToolToken implements Serializable {
-
   private static final long serialVersionUID = 1L;
-
+  //
+  private static final long expire_default = 3600L; //缺省过期时间，3600秒
   /**
    * 用户名称
    */
@@ -129,6 +130,7 @@ public class ToolToken implements Serializable {
     if (userDetails == null) {
       return null;
     }
+    log.info("userDetails: {}", ToolJson.toJson(userDetails));
     return new AuthenticationToken(userDetails, null, userDetails.getAuthorities(), token);
   }
 
@@ -170,8 +172,8 @@ public class ToolToken implements Serializable {
       String secret = ConfigSecurity.security.token.secret;
       claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
     } catch (Exception e) {
-      log.error("getClaimsFromToken error!", e);
-      claims = null;
+      //      claims = null;
+      throw new CommonException(Code.AUTHENTICATION_EXCEPTION);
     }
     return claims;
   }
@@ -182,10 +184,22 @@ public class ToolToken implements Serializable {
    * @return 令牌
    */
   private static String generateToken(Map<String, Object> claims) {
-    long expire = ConfigSecurity.security.token.expire * 1000;
+    long expire = getExpire();
     Date expirationDate = new Date(System.currentTimeMillis() + expire);
     String secret = ConfigSecurity.security.token.secret;
     return Jwts.builder().setClaims(claims).setExpiration(expirationDate).signWith(SignatureAlgorithm.HS512, secret).compact();
+  }
+
+  private static long getExpire() {
+    String expire = ConfigSecurity.security.token.expire;
+    Long value = Tool.getConfigTime(expire);
+    if (Tool.isNull(value)) {
+      value = expire_default;
+    }
+    if (value < 0) {
+      throw new CommonException(Code.SETTING_ERROR, "时间配置无效! expire: " + expire);
+    }
+    return value * 1000L;
   }
 
   /**

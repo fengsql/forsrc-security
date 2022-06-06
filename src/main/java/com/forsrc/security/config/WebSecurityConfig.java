@@ -13,11 +13,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -28,10 +30,6 @@ import javax.servlet.Filter;
 import java.util.List;
 import java.util.Map;
 
-//@ConditionalOnBean(IUserDetailsService.class)
-//@ConditionalOnExpression("${security.enable:false}")
-//@ConditionalOnClass(IUserDetailsService.class)
-//@ConditionalOnExpression("#{'true'.equals(environment['security.enable'])}")
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
@@ -47,10 +45,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   private UnauthenticationHandler unauthenticationHandler;
   @Resource
   private SecurityLogoutHandler logoutSuccessHandler;
-//  @Resource
-//  private IUserDetailsService userDetailsService;
-//  @Resource
-//  private PasswordEncoder passwordEncoder;
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
@@ -60,36 +54,38 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
     log.info("WebSecurityConfig start.");
 
-    http //
-      .csrf().disable()  //禁用 Spring Security 自带的跨域处理
-      .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)  //禁用session
-      .and()  //
-      .headers().frameOptions().disable()  // 解决不允许显示在iframe的问题
-      .and()  //
-      .exceptionHandling()  //
-      .accessDeniedHandler(accessDeniedHandler)  //登录后, 访问没有权限处理类
-      .authenticationEntryPoint(unauthenticationHandler)  //匿名访问, 没有权限的处理类
-      //      .successHandler(loginSuccessHandler)  //登录成功
-      //      .failureHandler(loginFailureHandler)  //登录失败
-      .and()  //
-      .logout().logoutUrl(ConfigSecurity.security.logoutUrl).permitAll()  //退出登录
-      .logoutSuccessHandler(logoutSuccessHandler)  //
-      .and() //
-      .authorizeRequests().antMatchers(HttpMethod.OPTIONS, "/**").anonymous();  //跨域预检请求
+    configCommon(http);
+    //    http //
+    //      .csrf().disable()  //禁用 Spring Security 自带的跨域处理
+    //      .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)  //禁用session
+    //      .and()  //
+    //      .headers().frameOptions().disable()  // 解决不允许显示在iframe的问题
+    //      .and()  //
+    //      .exceptionHandling()  //
+    //      .accessDeniedHandler(accessDeniedHandler)  //登录后, 访问没有权限处理类
+    //      .authenticationEntryPoint(unauthenticationHandler)  //匿名访问, 没有权限的处理类
+    //      .and()  //
+    //      .logout().logoutUrl(ConfigSecurity.security.logoutUrl).permitAll()  //退出登录
+    //      .logoutSuccessHandler(logoutSuccessHandler)  //
+    //      .and() //
+    //      .authorizeRequests().antMatchers(HttpMethod.OPTIONS, "/**").anonymous();  //跨域预检请求
 
-    setAuthApi(http);
-    addAll(http);
-    addRole(http);
+    ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry = http.authorizeRequests();
+
+    registry.antMatchers(HttpMethod.OPTIONS, "/**").anonymous();  //跨域预检请求
+
+    setAuthApi(registry);
+    addAll(registry);
+    addRole(registry);
 
     //
-    http.authorizeRequests()  //
+    registry  //
       .anyRequest().authenticated()  // 剩下所有的验证都需要验证
       //.anyRequest().permitAll() //剩下所有的都通过
       .and() //
       .addFilter(getLoginFilter()) //
       .addFilter(getAuthenticationFilter()); //
 
-    http.headers().cacheControl(); //禁用缓存
     log.info("WebSecurityConfig ok.");
   }
 
@@ -100,6 +96,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
       return;
     }
     addPermit(web);
+  }
+
+  @Override
+  protected void configure(AuthenticationManagerBuilder builder) {
+
   }
 
   @Bean
@@ -121,15 +122,31 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     return new LoginFilter(securityLoginService);
   }
 
-//  private PasswordEncoder getPasswordEncoder() {
-//    if (passwordEncoder == null) {
-//      passwordEncoder = NoOpPasswordEncoder.getInstance();
-//    }
-//    return passwordEncoder;
-//  }
+  //  private PasswordEncoder getPasswordEncoder() {
+  //    if (passwordEncoder == null) {
+  //      passwordEncoder = NoOpPasswordEncoder.getInstance();
+  //    }
+  //    return passwordEncoder;
+  //  }
 
   private Filter getAuthenticationFilter() throws Exception {
     return new AuthenticationFilter(authenticationManager());
+  }
+
+  private void configCommon(HttpSecurity http) throws Exception {
+    http //
+      .csrf().disable()  //禁用 Spring Security 自带的跨域处理
+      .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)  //禁用session
+      .and()  //
+      .headers().frameOptions().disable()  // 解决不允许显示在iframe的问题
+      .cacheControl().disable()  // 禁用缓存
+      .and()  //
+      .exceptionHandling()  //
+      .accessDeniedHandler(accessDeniedHandler)  //登录后, 访问没有权限处理类
+      .authenticationEntryPoint(unauthenticationHandler)  //匿名访问, 没有权限的处理类
+      .and()  //
+      .logout().logoutUrl(ConfigSecurity.security.logoutUrl).permitAll()  //退出登录
+      .logoutSuccessHandler(logoutSuccessHandler);  //
   }
 
   private void addPermit(WebSecurity web) {
@@ -139,30 +156,30 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     web.ignoring().antMatchers(ConfigSecurity.security.permit.toArray(new String[0]));
   }
 
-  private void setAuthApi(HttpSecurity http) throws Exception {
+  private void setAuthApi(ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry) throws Exception {
     String apiPrefix = getApiPatten();
     if (ConfigSecurity.security.enable) {
-      http.authorizeRequests().antMatchers(HttpMethod.POST, apiPrefix).hasAnyAuthority();
+      registry.antMatchers(HttpMethod.POST, apiPrefix).hasAnyAuthority();
     } else {
-      http.authorizeRequests().antMatchers(HttpMethod.POST, apiPrefix).permitAll();
+      registry.antMatchers(HttpMethod.POST, apiPrefix).permitAll();
     }
   }
 
-  private void addAll(HttpSecurity http) throws Exception {
+  private void addAll(ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry) throws Exception {
     if (ConfigSecurity.security.all == null) {
       return;
     }
-    http.authorizeRequests().antMatchers(ConfigSecurity.security.all.toArray(new String[0])).hasAnyAuthority();
+    registry.antMatchers(ConfigSecurity.security.all.toArray(new String[0])).hasAnyAuthority();
   }
 
-  private void addRole(HttpSecurity http) throws Exception {
+  private void addRole(ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry) throws Exception {
     if (ConfigSecurity.security.role == null) {
       return;
     }
     for (Map.Entry<String, List<String>> entry : ConfigSecurity.security.role.entrySet()) {
       String role = entry.getKey();
       List<String> path = entry.getValue();
-      http.authorizeRequests().antMatchers(path.toArray(new String[0])).hasAnyRole(role); //.hasAnyRole(role);
+      registry.antMatchers(path.toArray(new String[0])).hasAnyRole(role); //.hasAnyRole(role);
       log.info("addRole role: {}. path: {}", role, path);
     }
   }

@@ -7,12 +7,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@WebFilter(filterName = "tokenHeaderFilter", urlPatterns = "/api/**/*")
+//@WebFilter(filterName = "tokenHeaderFilter", urlPatterns = "/api/**/*")
 @Component
 @Slf4j
 public class TokenHeaderFilter extends OncePerRequestFilter {
