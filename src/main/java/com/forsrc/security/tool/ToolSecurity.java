@@ -15,7 +15,11 @@ public class ToolSecurity {
    * 设置授权信息。
    */
   public static void setAuthentication(HttpServletRequest request) {
-    Authentication authentication = ToolToken.getAuthenticationFromToken(request); // 获取令牌并根据令牌获取授权信息
+    Authentication authentication = getAuthentication();
+    if (authentication != null) {
+      return;
+    }
+    authentication = ToolToken.getAuthenticationFromToken(request); // 获取令牌并根据令牌获取授权信息
     SecurityContextHolder.getContext().setAuthentication(authentication); // 设置授权信息到上下文
   }
 
