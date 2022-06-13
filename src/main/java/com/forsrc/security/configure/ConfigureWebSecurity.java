@@ -41,14 +41,14 @@ public class ConfigureWebSecurity extends WebSecurityConfigurerAdapter {
   @Override
   protected void configure(HttpSecurity http) throws Exception {
     configCommon(http);
+    ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry = http.authorizeRequests();
     if (!enable) {
-      http.authorizeRequests().anyRequest().permitAll();
+      registry.anyRequest().permitAll();
       return;
     }
-    log.info("WebSecurityConfig start.");
-
-    ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry = http.authorizeRequests();
+    
     registry.antMatchers(HttpMethod.OPTIONS, "/**").anonymous();  //跨域预检请求
+    
     setProcessor(registry);
 
     registry  //
