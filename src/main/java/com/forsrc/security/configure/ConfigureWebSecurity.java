@@ -46,9 +46,9 @@ public class ConfigureWebSecurity extends WebSecurityConfigurerAdapter {
       registry.anyRequest().permitAll();
       return;
     }
-    
+
     registry.antMatchers(HttpMethod.OPTIONS, "/**").anonymous();  //跨域预检请求
-    
+
     setProcessor(registry);
 
     registry  //
@@ -66,7 +66,7 @@ public class ConfigureWebSecurity extends WebSecurityConfigurerAdapter {
       web.ignoring().antMatchers("/**");
       return;
     }
-    addPermit(web);
+    //    addPermit(web);
   }
 
   //  @Override
@@ -109,12 +109,12 @@ public class ConfigureWebSecurity extends WebSecurityConfigurerAdapter {
       .logoutSuccessHandler(new HandlerSecurityLogout());  //
   }
 
-  private void addPermit(WebSecurity web) {
-    if (ConfigSecurity.security.permit == null) {
-      return;
-    }
-    web.ignoring().antMatchers(ConfigSecurity.security.permit.toArray(new String[0]));
-  }
+  //  private void addPermit(WebSecurity web) {
+  //    if (ConfigSecurity.security.permit == null) {
+  //      return;
+  //    }
+  //    web.ignoring().antMatchers(ConfigSecurity.security.permit.toArray(new String[0]));
+  //  }
 
   private void setProcessor(ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry) {
     registry.withObjectPostProcessor(new SecurityObjectPostProcessor());
