@@ -23,7 +23,7 @@ public class DecisionAccess implements AccessDecisionManager {
    */
   @Override
   public void decide(Authentication authentication, Object object, Collection<ConfigAttribute> configAttributes) throws AccessDeniedException, InsufficientAuthenticationException {
-    log.info("decide. authentication: {}", authentication);
+    log.debug("decide. authentication: {}", authentication);
     if (configAttributes == null || configAttributes.size() == 0) {
       throw new AccessDeniedException("permission denied");
     }
@@ -34,7 +34,7 @@ public class DecisionAccess implements AccessDecisionManager {
     }
     for (ConfigAttribute configAttribute : configAttributes) {
       String needRole = configAttribute.getAttribute();
-      log.info("needRole: {} . authentication: {}", needRole, authentication);
+      log.debug("needRole: {} . authentication: {}", needRole, authentication);
 
       //      if ("ROLE_ANONYMOUS".equalsIgnoreCase(needRole) && authentication instanceof UsernamePasswordAuthenticationToken) {
       //        log.info("decide anonymous.");
@@ -42,12 +42,12 @@ public class DecisionAccess implements AccessDecisionManager {
       //      }
 
       if (isRoleAll(needRole)) {  //所有角色都可以访问，已登录用户
-        log.info("decide all.");
+        log.debug("decide all.");
         return;
       }
       for (GrantedAuthority grantedAuthority : authentication.getAuthorities()) {
         if (isRole(needRole, grantedAuthority)) {
-          log.info("decide role.");
+          log.debug("decide role.");
           return;
         }
       }

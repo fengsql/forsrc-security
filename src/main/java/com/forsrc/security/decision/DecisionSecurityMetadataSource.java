@@ -29,21 +29,21 @@ public class DecisionSecurityMetadataSource implements FilterInvocationSecurityM
   public Collection<ConfigAttribute> getAttributes(Object object) throws IllegalArgumentException {
     FilterInvocation filterInvocation = (FilterInvocation) object;
     if (isMatcherAllowedRequest(filterInvocation)) {
-      log.info("getAttributes isMatcherAllowedRequest pass.");
+      log.debug("getAttributes isMatcherAllowedRequest pass.");
       return null; //return null 表示允许访问，不做拦截
     }
 
     String url = filterInvocation.getRequestUrl();
-    log.info("getAttributes url: {}", url);
+    log.debug("getAttributes url: {}", url);
 
     //    Authentication authentication = ToolSecurity.getAuthentication();
-    //    log.info("getAttributes authentication: {}", authentication);
+    //    log.debug("getAttributes authentication: {}", authentication);
 
     List<String> roles = new ArrayList<>();
     addRole(url, roles);
     if (roles.size() > 0) {
       String[] ary = roles.toArray(new String[0]);
-      log.info("getAttributes roles: {}. size: {}", ary, ary.length);
+      log.debug("getAttributes roles: {}. size: {}", ary, ary.length);
       return SecurityConfig.createList(ary);
     }
     log.info("undefine url permit access. url: {}", url);
@@ -72,7 +72,7 @@ public class DecisionSecurityMetadataSource implements FilterInvocationSecurityM
     }
     for (String path : ConfigSecurity.security.all) { //所有角色都可以访问，已登录用户
       if (antPathMatcher.match(path, url)) {
-        log.info("getAttributes all role pass.");
+        log.debug("getAttributes all role pass.");
         roles.add(ConstSecurity.role.all);
         return true;
       }
