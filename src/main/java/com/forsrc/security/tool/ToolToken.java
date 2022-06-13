@@ -3,7 +3,6 @@ package com.forsrc.security.tool;
 import com.forsrc.common.constant.Code;
 import com.forsrc.common.exception.CommonException;
 import com.forsrc.common.tool.Tool;
-import com.forsrc.common.tool.ToolJson;
 import com.forsrc.security.config.ConfigSecurity;
 import com.forsrc.security.model.AuthenticationToken;
 import com.forsrc.security.model.UserDetail;
@@ -137,7 +136,7 @@ public class ToolToken implements Serializable {
     if (userDetails == null) {
       return null;
     }
-    log.info("userDetails: {}", ToolJson.toJson(userDetails));
+//    log.info("userDetails: {}", ToolJson.toJson(userDetails));
     return new AuthenticationToken(userDetails, null, userDetails.getAuthorities(), token);
   }
 
