@@ -1,4 +1,4 @@
-package com.forsrc.security.service;
+package com.forsrc.security.handler;
 
 import com.forsrc.common.tool.Tool;
 import com.forsrc.common.tool.ToolJson;
@@ -17,13 +17,10 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import javax.servlet.http.HttpServletRequest;
 
 @Slf4j
-public class SecurityLoginService {
+public class HandlerSecurityLogin {
   @Setter
   private AuthenticationManager authenticationManager;
 
-  /**
-   * 系统登录认证
-   */
   @SneakyThrows
   public Authentication login(HttpServletRequest request) {
     String param = Tool.readStream(request.getInputStream());

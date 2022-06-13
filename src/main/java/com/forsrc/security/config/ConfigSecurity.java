@@ -24,7 +24,6 @@ public class ConfigSecurity {
     public static boolean enable;
     public static String loginUrl;
     public static String logoutUrl;
-    public static String apiPrefix;
 
     public static class token {
       public static String name;
@@ -62,12 +61,6 @@ public class ConfigSecurity {
   @Value("${security.logout-url:/auth/logout}")
   public void setSecurity_logoutUrl(String value) {
     security.logoutUrl = Tool.toString(value);
-  }
-
-  //security-logoutUrl
-  @Value("${security.api-prefix:}")
-  public void setSecurity_apiPrefix(String value) {
-    security.apiPrefix = Tool.toString(value);
   }
 
   //security-token

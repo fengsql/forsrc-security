@@ -5,7 +5,7 @@ import com.forsrc.common.tool.ToolResponse;
 import com.forsrc.security.base.BLoginResponse;
 import com.forsrc.security.base.IUserDetails;
 import com.forsrc.security.config.ConfigSecurity;
-import com.forsrc.security.service.SecurityLoginService;
+import com.forsrc.security.handler.HandlerSecurityLogin;
 import com.forsrc.security.tool.ToolToken;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -22,12 +22,12 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Slf4j
-public class LoginFilter extends UsernamePasswordAuthenticationFilter {
+public class FilterLogin extends UsernamePasswordAuthenticationFilter {
 
-  private final SecurityLoginService securityLoginService;
+  private final HandlerSecurityLogin handlerSecurityLogin;
 
-  public LoginFilter(SecurityLoginService securityLoginService) {
-    this.securityLoginService = securityLoginService;
+  public FilterLogin(HandlerSecurityLogin handlerSecurityLogin) {
+    this.handlerSecurityLogin = handlerSecurityLogin;
     super.setFilterProcessesUrl(ConfigSecurity.security.loginUrl);
   }
 
@@ -35,7 +35,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
   @Override
   public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
     log.info("login start.");
-    return securityLoginService.login(request);
+    return handlerSecurityLogin.login(request);
   }
 
   @Override

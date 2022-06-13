@@ -65,7 +65,8 @@ public class ToolToken implements Serializable {
   public static Authentication getAuthenticationFromToken(HttpServletRequest request) {
     String token = getToken(request);
     if (token == null) {
-      throw new CommonException(Code.AUTHENTICATION_EXCEPTION);
+      //      throw new CommonException(Code.AUTHENTICATION_EXCEPTION);
+      return null;
     }
     return newAuthentication(token);
   }
@@ -85,6 +86,9 @@ public class ToolToken implements Serializable {
     String refreshedToken;
     try {
       Claims claims = getClaimsFromToken(token);
+      if (claims == null) {
+        return null;
+      }
       claims.put(CREATED, new Date());
       refreshedToken = generateToken(claims);
     } catch (Exception e) {
@@ -101,10 +105,13 @@ public class ToolToken implements Serializable {
   public static Boolean isTokenExpired(String token) {
     try {
       Claims claims = getClaimsFromToken(token);
+      if (claims == null) {
+        return true;
+      }
       Date expiration = claims.getExpiration();
       return expiration.before(new Date());
     } catch (Exception e) {
-      return false;
+      return true;
     }
   }
 
@@ -172,8 +179,8 @@ public class ToolToken implements Serializable {
       String secret = ConfigSecurity.security.token.secret;
       claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
     } catch (Exception e) {
-      //      claims = null;
-      throw new CommonException(Code.AUTHENTICATION_EXCEPTION);
+      claims = null;
+//      throw new CommonException(Code.AUTHENTICATION_EXCEPTION);
     }
     return claims;
   }
@@ -211,6 +218,9 @@ public class ToolToken implements Serializable {
     String username;
     try {
       Claims claims = getClaimsFromToken(token);
+      if (claims == null) {
+        return null;
+      }
       username = claims.getSubject();
     } catch (Exception e) {
       username = null;
