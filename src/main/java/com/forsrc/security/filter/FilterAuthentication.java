@@ -17,7 +17,7 @@ public class FilterAuthentication extends OncePerRequestFilter {
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-    log.info("FilterAuthentication.");
+    log.debug("FilterAuthentication.");
     ToolSecurity.setAuthentication(request);
     filterChain.doFilter(request, response);
   }
@@ -31,7 +31,7 @@ public class FilterAuthentication extends OncePerRequestFilter {
     String url = request.getServletPath();
     for (String path : ConfigSecurity.security.permit) {
       if (antPathMatcher.match(path, url)) {
-//        log.info("shouldNotFilter true");
+        log.debug("shouldNotFilter true");
         return true;
       }
     }

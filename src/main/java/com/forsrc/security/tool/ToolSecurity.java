@@ -26,12 +26,12 @@ public class ToolSecurity {
   /**
    * 获取当前用户名
    */
-  public static UserDetail getUserDetails() {
+  public static UserDetail getUserDetail() {
     Authentication authentication = getAuthentication();
     if (authentication == null) {
       return null;
     }
-    return getUserDetails(authentication);
+    return getUserDetail(authentication);
   }
 
   /**
@@ -52,7 +52,7 @@ public class ToolSecurity {
   /**
    * 获取用户名
    */
-  public static UserDetail getUserDetails(Authentication authentication) {
+  public static UserDetail getUserDetail(Authentication authentication) {
     if (authentication == null) {
       return null;
     }

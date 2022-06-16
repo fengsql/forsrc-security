@@ -48,10 +48,10 @@ public class ToolToken implements Serializable {
    */
   public static String generateToken(Authentication authentication) {
     Map<String, Object> claims = new HashMap<>(5);
-    UserDetail userDetails = ToolSecurity.getUserDetails(authentication);
-    claims.put(USERID, userDetails.getUserId());
-    claims.put(USERNAME, userDetails.getUsername());
-    claims.put(ROLE, userDetails.getRoleType());
+    UserDetail userDetail = ToolSecurity.getUserDetail(authentication);
+    claims.put(USERID, userDetail.getUserId());
+    claims.put(USERNAME, userDetail.getUsername());
+    claims.put(ROLE, userDetail.getRoleType());
     claims.put(CREATED, new Date());
     claims.put(AUTHORITIES, authentication.getAuthorities());
     return generateToken(claims);
