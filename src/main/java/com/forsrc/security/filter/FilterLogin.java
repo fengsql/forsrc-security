@@ -44,7 +44,7 @@ public class FilterLogin extends UsernamePasswordAuthenticationFilter {
     String token = ToolToken.generateToken(authentication);
     BLoginResponse loginResponse = userDetails.getLoginResponse();
     loginResponse.setToken(token);
-    ToolResponse.write(response, loginResponse);
+    ToolResponse.writeBody(response, loginResponse);
     log.info("login ok. username: {}", userDetails.getUsername());
   }
 
