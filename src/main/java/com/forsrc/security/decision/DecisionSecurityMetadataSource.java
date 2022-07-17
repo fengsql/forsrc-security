@@ -46,8 +46,12 @@ public class DecisionSecurityMetadataSource implements FilterInvocationSecurityM
       log.debug("getAttributes roles: {}. size: {}", ary, ary.length);
       return SecurityConfig.createList(ary);
     }
-    log.info("undefine url permit access. url: {}", url);
-    return null;  //其余都可以访问
+    if (ConfigSecurity.security.permitAccessUrlUndefine) {
+      log.info("permit access url undefine. url: {}", url);
+      return null;
+    }
+    log.warn("forbid access! url: {}", url);
+    return SecurityConfig.createList("ROLE_LOGIN");  //其余需要登录才可以访问
   }
 
   @Override

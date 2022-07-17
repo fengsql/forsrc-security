@@ -15,6 +15,6 @@ public class ConfigSecurityAuthPath {
 
   private List<String> all;
 
-  public List<String> role;
+  private List<String> role;
 
 }
