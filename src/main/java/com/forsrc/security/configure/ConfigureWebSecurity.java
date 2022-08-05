@@ -31,7 +31,7 @@ import javax.servlet.Filter;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 @Slf4j
 public class ConfigureWebSecurity extends WebSecurityConfigurerAdapter {
 
@@ -105,7 +105,7 @@ public class ConfigureWebSecurity extends WebSecurityConfigurerAdapter {
     registry.withObjectPostProcessor(new SecurityObjectPostProcessor());
   }
 
-  private static class SecurityObjectPostProcessor implements ObjectPostProcessor<FilterSecurityInterceptor> {
+  public static class SecurityObjectPostProcessor implements ObjectPostProcessor<FilterSecurityInterceptor> {
     @Override
     public <O extends FilterSecurityInterceptor> O postProcess(O filter) {
       filter.setSecurityMetadataSource(filterSecurityMetadataSource());
