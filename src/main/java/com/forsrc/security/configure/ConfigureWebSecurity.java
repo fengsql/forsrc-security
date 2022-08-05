@@ -31,7 +31,7 @@ import javax.servlet.Filter;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableGlobalMethodSecurity
 @Slf4j
 public class ConfigureWebSecurity extends WebSecurityConfigurerAdapter {
 
@@ -60,19 +60,18 @@ public class ConfigureWebSecurity extends WebSecurityConfigurerAdapter {
     log.info("WebSecurityConfig ok.");
   }
 
+  private Filter getLoginFilter() throws Exception {
+    HandlerSecurityLogin handlerSecurityLogin = new HandlerSecurityLogin();
+    handlerSecurityLogin.setAuthenticationManager(authenticationManager());
+    return new FilterLogin(handlerSecurityLogin);
+  }
+
   @Override
   public void configure(WebSecurity web) throws Exception {
     if (!enable) {
       web.ignoring().antMatchers("/**");
-      return;
     }
-    //    addPermit(web);
   }
-
-  //  @Override
-  //  protected void configure(AuthenticationManagerBuilder builder) throws Exception {
-  //    builder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
-  //  }
 
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
@@ -81,16 +80,9 @@ public class ConfigureWebSecurity extends WebSecurityConfigurerAdapter {
     return source;
   }
 
-  //  @Bean
   @Override
   public AuthenticationManager authenticationManager() throws Exception {
     return super.authenticationManager();
-  }
-
-  private Filter getLoginFilter() throws Exception {
-    HandlerSecurityLogin handlerSecurityLogin = new HandlerSecurityLogin();
-    handlerSecurityLogin.setAuthenticationManager(authenticationManager());
-    return new FilterLogin(handlerSecurityLogin);
   }
 
   private void configCommon(HttpSecurity http) throws Exception {
@@ -109,33 +101,25 @@ public class ConfigureWebSecurity extends WebSecurityConfigurerAdapter {
       .logoutSuccessHandler(new HandlerSecurityLogout());  //
   }
 
-  //  private void addPermit(WebSecurity web) {
-  //    if (ConfigSecurity.security.permit == null) {
-  //      return;
-  //    }
-  //    web.ignoring().antMatchers(ConfigSecurity.security.permit.toArray(new String[0]));
-  //  }
-
   private void setProcessor(ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry) {
     registry.withObjectPostProcessor(new SecurityObjectPostProcessor());
   }
 
-  public FilterInvocationSecurityMetadataSource filterSecurityMetadataSource() {
-    return new DecisionSecurityMetadataSource();
-  }
-
-  public DecisionAccess accessDecisionManager() {
-    return new DecisionAccess();
-  }
-
-  private class SecurityObjectPostProcessor implements ObjectPostProcessor<FilterSecurityInterceptor> {
+  private static class SecurityObjectPostProcessor implements ObjectPostProcessor<FilterSecurityInterceptor> {
     @Override
-    public <O extends FilterSecurityInterceptor> O postProcess(O fsi) {
-      fsi.setSecurityMetadataSource(filterSecurityMetadataSource());
-      fsi.setAccessDecisionManager(accessDecisionManager());
-      return fsi;
+    public <O extends FilterSecurityInterceptor> O postProcess(O filter) {
+      filter.setSecurityMetadataSource(filterSecurityMetadataSource());
+      filter.setAccessDecisionManager(accessDecisionManager());
+      return filter;
     }
 
+    private FilterInvocationSecurityMetadataSource filterSecurityMetadataSource() {
+      return new DecisionSecurityMetadataSource();
+    }
+
+    private DecisionAccess accessDecisionManager() {
+      return new DecisionAccess();
+    }
   }
 
   private FilterAuthentication filterAuthentication() {

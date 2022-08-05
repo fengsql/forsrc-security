@@ -52,6 +52,7 @@ public class DecisionAccess implements AccessDecisionManager {
         }
       }
     }
+    //未定义的 url 拒绝访问，抛出异常。如果需要可以访问，注释掉下行。
     throw new AccessDeniedException("permission denied");
   }
 

@@ -15,7 +15,7 @@ public class HandlerAuthenticationDenied implements AccessDeniedHandler {
 
   @Override
   public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException exception) throws IOException {
-    log.info("AccessDeniedException. url: {}. msg: {}", request.getRequestURI(), exception.getMessage());
+    log.info("access denied. url: {}. msg: {}", request.getRequestURI(), exception.getMessage());
     ToolResponse.error(response, Code.AUTHENTICATION_DENY);
   }
 

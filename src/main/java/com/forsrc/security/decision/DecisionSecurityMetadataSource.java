@@ -30,7 +30,7 @@ public class DecisionSecurityMetadataSource implements FilterInvocationSecurityM
     FilterInvocation filterInvocation = (FilterInvocation) object;
     if (isMatcherAllowedRequest(filterInvocation)) {
       log.debug("getAttributes isMatcherAllowedRequest pass.");
-      return null; //return null 表示允许访问，不做拦截
+      return null; //表示允许访问，不做拦截
     }
 
     String url = filterInvocation.getRequestUrl();

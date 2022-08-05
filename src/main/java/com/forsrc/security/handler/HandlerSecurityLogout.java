@@ -15,7 +15,7 @@ public class HandlerSecurityLogout implements LogoutSuccessHandler {
 
   @Override
   public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-    log.info("onLogoutSuccess ok.");
+    log.info("logout ok.");
     ToolResponse.writeData(response, "注销成功");
   }
 
