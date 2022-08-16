@@ -29,7 +29,7 @@ public class DecisionAccess implements AccessDecisionManager {
     }
     //所有访问都需要登录，不需要登录的不会进入此方法
     if (isAnonymous(authentication)) {
-      log.info("decide 未登录.");
+      log.info("decide denied no login.");
       throw new AccessDeniedException("permission denied");
     }
     for (ConfigAttribute configAttribute : configAttributes) {
