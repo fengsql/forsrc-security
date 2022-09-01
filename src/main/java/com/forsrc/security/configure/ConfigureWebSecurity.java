@@ -2,12 +2,15 @@ package com.forsrc.security.configure;
 
 import com.forsrc.security.config.ConfigSecurity;
 import com.forsrc.security.decision.DecisionAccess;
+import com.forsrc.security.decision.DecisionSecurityMetadataSource;
 import com.forsrc.security.filter.FilterAuthentication;
 import com.forsrc.security.filter.FilterLogin;
-import com.forsrc.security.decision.DecisionSecurityMetadataSource;
-import com.forsrc.security.handler.*;
+import com.forsrc.security.handler.HandlerAuthenticationDenied;
+import com.forsrc.security.handler.HandlerSecurityLogin;
+import com.forsrc.security.handler.HandlerSecurityLogout;
+import com.forsrc.security.handler.HandlerUnauthentication;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -30,22 +33,23 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import javax.servlet.Filter;
 
 @Configuration
+@ConditionalOnProperty(name = "security.enable", havingValue = "true", matchIfMissing = true)
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @Slf4j
 public class ConfigureWebSecurity extends WebSecurityConfigurerAdapter {
 
-  @Value("${security.enable:false}")
-  private boolean enable;
+//  @Value("${security.enable:false}")
+//  private boolean enable;
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
     configCommon(http);
     ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry = http.authorizeRequests();
-    if (!enable) {
-      registry.anyRequest().permitAll();
-      return;
-    }
+//    if (!enable) {
+//      registry.anyRequest().permitAll();
+//      return;
+//    }
 
     registry.antMatchers(HttpMethod.OPTIONS, "/**").anonymous();  //跨域预检请求
 
@@ -68,9 +72,9 @@ public class ConfigureWebSecurity extends WebSecurityConfigurerAdapter {
 
   @Override
   public void configure(WebSecurity web) throws Exception {
-    if (!enable) {
-      web.ignoring().antMatchers("/**");
-    }
+//    if (!enable) {
+//      web.ignoring().antMatchers("/**");
+//    }
   }
 
   @Bean
