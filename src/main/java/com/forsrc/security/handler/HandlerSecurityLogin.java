@@ -1,7 +1,7 @@
 package com.forsrc.security.handler;
 
 import com.forsrc.common.constant.Code;
-import com.forsrc.common.exception.CommonException;
+import com.forsrc.common.exception.ErrorException;
 import com.forsrc.common.tool.Tool;
 import com.forsrc.common.tool.ToolJson;
 import com.forsrc.security.model.AuthenticationToken;
@@ -55,15 +55,15 @@ public class HandlerSecurityLogin {
   private void checkLoginUser(LoginUser loginUser, String param) {
     if (loginUser == null) {
       log.warn("login fail! loginUser is null. param: {}", param);
-      throw new CommonException(Code.PARAM_EXCEPTION, "login param error!");
+      throw new ErrorException(Code.PARAM_EXCEPTION, "login param error!");
     }
     if (Tool.isNull(loginUser.getUsername())) {
       log.warn("login fail! username is null. param: {}", param);
-      throw new CommonException(Code.PARAM_EXCEPTION, "username or password is empty!");
+      throw new ErrorException(Code.PARAM_EXCEPTION, "username or password is empty!");
     }
     if (Tool.isNull(loginUser.getPassword())) {
       log.warn("login fail! password is null. param: {}", param);
-      throw new CommonException(Code.PARAM_EXCEPTION, "username or password is empty!");
+      throw new ErrorException(Code.PARAM_EXCEPTION, "username or password is empty!");
     }
 
   }

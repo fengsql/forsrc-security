@@ -65,7 +65,7 @@ public class ConfigSecurity {
   }
 
   //security-logoutUrl
-  @Value("${security.permit_access_url_undefine:false}")
+  @Value("${security.permit-access-url-undefine:false}")
   public void setSecurity_permitAccessUrlUndefine(String value) {
     security.permitAccessUrlUndefine = Tool.toBoolean(value);
   }
