@@ -16,6 +16,6 @@ public class HandlerUnauthentication implements AuthenticationEntryPoint {
   @Override
   public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
     log.info("UnauthenticationHandler. url: {}. msg: {}", request.getRequestURI(), exception.getMessage());
-    ToolResponse.error(response, Code.AUTHENTICATION_EMPTY);
+    ToolResponse.error(response, Code.AUTHENTICATION_EXCEPTION);
   }
 }
