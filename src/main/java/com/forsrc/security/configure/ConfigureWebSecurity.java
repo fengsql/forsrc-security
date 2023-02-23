@@ -39,17 +39,10 @@ import javax.servlet.Filter;
 @Slf4j
 public class ConfigureWebSecurity extends WebSecurityConfigurerAdapter {
 
-//  @Value("${security.enable:false}")
-//  private boolean enable;
-
   @Override
   protected void configure(HttpSecurity http) throws Exception {
     configCommon(http);
     ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry = http.authorizeRequests();
-//    if (!enable) {
-//      registry.anyRequest().permitAll();
-//      return;
-//    }
 
     registry.antMatchers(HttpMethod.OPTIONS, "/**").anonymous();  //跨域预检请求
 
@@ -72,9 +65,9 @@ public class ConfigureWebSecurity extends WebSecurityConfigurerAdapter {
 
   @Override
   public void configure(WebSecurity web) throws Exception {
-//    if (!enable) {
-//      web.ignoring().antMatchers("/**");
-//    }
+    //    if (!enable) {
+    //      web.ignoring().antMatchers("/**");
+    //    }
   }
 
   @Bean
