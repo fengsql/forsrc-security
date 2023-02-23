@@ -1,7 +1,7 @@
 package com.forsrc.security.tool;
 
 import com.forsrc.common.constant.Code;
-import com.forsrc.common.exception.ErrorException;
+import com.forsrc.common.exception.CommonException;
 import com.forsrc.common.tool.Tool;
 import com.forsrc.security.config.ConfigSecurity;
 import com.forsrc.security.model.AuthenticationToken;
@@ -203,7 +203,7 @@ public class ToolToken implements Serializable {
       value = expire_default;
     }
     if (value < 0) {
-      throw new ErrorException(Code.SETTING_ERROR, "时间配置无效! expire: " + expire);
+      throw new CommonException(Code.SETTING_ERROR, "时间配置无效! expire: " + expire);
     }
     return value * 1000L;
   }

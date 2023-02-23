@@ -9,6 +9,6 @@ public class LoginUser {
 	
 	private String password;
 
-	private String code;
+	private String verifyCode;
 
 }

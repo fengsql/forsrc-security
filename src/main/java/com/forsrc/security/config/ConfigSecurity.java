@@ -22,6 +22,7 @@ public class ConfigSecurity {
   public static class security {
 
     public static boolean enable;
+    public static boolean enableVerifyCode;
     public static String loginUrl;
     public static String logoutUrl;
     public static boolean permitAccessUrlUndefine;
@@ -50,6 +51,12 @@ public class ConfigSecurity {
   @Value("${security.enable:false}")
   public void setSecurity_enable(String value) {
     security.enable = Tool.toBoolean(value);
+  }
+
+  //security-enableVerifyCode
+  @Value("${security.enable-verify-code:false}")
+  public void setSecurity_enableVerifyCode(String value) {
+    security.enableVerifyCode = Tool.toBoolean(value);
   }
 
   //security-loginUrl
