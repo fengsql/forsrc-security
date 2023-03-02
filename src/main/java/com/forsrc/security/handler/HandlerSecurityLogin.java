@@ -17,20 +17,24 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @Slf4j
 public class HandlerSecurityLogin {
   @Setter
   private AuthenticationManager authenticationManager;
+  @Setter
+  private HandlerExceptionResolver resolver;
 
   @SneakyThrows
-  public Authentication login(HttpServletRequest request) {
+  public Authentication login(HttpServletRequest request, HttpServletResponse response) throws CommonException {
     String param = Tool.readStream(request.getInputStream());
     LoginUser loginUser = ToolJson.toBean(param, LoginUser.class);
-    checkLoginUser(loginUser, param);
-    checkVerifyCode(request, loginUser);
+    checkLoginUser(request, response, loginUser, param);
+    checkVerifyCode(request, response, loginUser);
     return login(request, loginUser);
   }
 
@@ -55,35 +59,40 @@ public class HandlerSecurityLogin {
     return userDetail;
   }
 
-  private void checkLoginUser(LoginUser loginUser, String param) {
+  private void checkLoginUser(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser, String param) {
+
     if (loginUser == null) {
       log.warn("login fail! loginUser is null. param: {}", param);
-      throw new CommonException(Code.USER_LOGIN_FAIL, "login param error!");
+      resolver.resolveException(request, response, null, new CommonException(Code.USER_LOGIN_FAIL, "login param is empty!"));
+      return;
     }
     if (Tool.isNull(loginUser.getUsername())) {
       log.warn("login fail! username is null. param: {}", param);
-      throw new CommonException(Code.USER_LOGIN_FAIL, "username or password is empty!");
+      resolver.resolveException(request, response, null, new CommonException(Code.USER_LOGIN_FAIL, "username is empty!"));
+      return;
     }
     if (Tool.isNull(loginUser.getPassword())) {
       log.warn("login fail! password is null. param: {}", param);
-      throw new CommonException(Code.USER_LOGIN_FAIL, "username or password is empty!");
+      resolver.resolveException(request, response, null, new CommonException(Code.USER_LOGIN_FAIL, "password is empty!"));
     }
   }
 
-  private void checkVerifyCode(HttpServletRequest request, LoginUser loginUser) {
+  private void checkVerifyCode(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) {
     if (!ConfigSecurity.security.enableVerifyCode) {
       return;
     }
     String verifyCode = loginUser.getVerifyCode();
     if (Tool.isNull(verifyCode)) {
-      throw new CommonException(Code.USER_LOGIN_FAIL, "request verifyCode is empty!");
+      resolver.resolveException(request, response, null, new CommonException(Code.USER_LOGIN_FAIL, "request verifyCode is empty!"));
+      return;
     }
     String code = (String) request.getSession().getAttribute(Const.param_verifyCode);
     if (Tool.isNull(code)) {
-      throw new CommonException(Code.USER_LOGIN_FAIL, "attribute verifyCode is empty!");
+      resolver.resolveException(request, response, null, new CommonException(Code.USER_LOGIN_FAIL, "please request verifyCode first!"));
+      return;
     }
     if (!verifyCode.trim().toLowerCase().equals(code.toLowerCase())) {
-      throw new CommonException(Code.USER_LOGIN_FAIL, "verifyCode not match!");
+      resolver.resolveException(request, response, null, new CommonException(Code.USER_LOGIN_FAIL, "verifyCode not match!"));
     }
   }
 

@@ -1,5 +1,6 @@
 package com.forsrc.security.configure;
 
+import com.forsrc.common.tool.ToolBean;
 import com.forsrc.security.config.ConfigSecurity;
 import com.forsrc.security.decision.DecisionAccess;
 import com.forsrc.security.decision.DecisionSecurityMetadataSource;
@@ -29,6 +30,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import javax.servlet.Filter;
 
@@ -39,8 +41,11 @@ import javax.servlet.Filter;
 @Slf4j
 public class ConfigureWebSecurity extends WebSecurityConfigurerAdapter {
 
+  private HandlerExceptionResolver resolver;
+  
   @Override
   protected void configure(HttpSecurity http) throws Exception {
+    resolver = getResolver();
     configCommon(http);
     ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry = http.authorizeRequests();
 
@@ -60,6 +65,7 @@ public class ConfigureWebSecurity extends WebSecurityConfigurerAdapter {
   private Filter getLoginFilter() throws Exception {
     HandlerSecurityLogin handlerSecurityLogin = new HandlerSecurityLogin();
     handlerSecurityLogin.setAuthenticationManager(authenticationManager());
+    handlerSecurityLogin.setResolver(resolver);
     return new FilterLogin(handlerSecurityLogin);
   }
 
@@ -121,6 +127,10 @@ public class ConfigureWebSecurity extends WebSecurityConfigurerAdapter {
 
   private FilterAuthentication filterAuthentication() {
     return new FilterAuthentication();
+  }
+
+  private HandlerExceptionResolver getResolver() {
+    return (HandlerExceptionResolver) ToolBean.getBean("handlerExceptionResolver");
   }
 
 }

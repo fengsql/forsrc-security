@@ -1,19 +1,21 @@
 package com.forsrc.security.filter;
 
 import com.forsrc.common.constant.Code;
+import com.forsrc.common.exception.CommonException;
 import com.forsrc.common.tool.ToolResponse;
 import com.forsrc.security.base.BLoginResponse;
 import com.forsrc.security.base.IUserDetails;
 import com.forsrc.security.config.ConfigSecurity;
 import com.forsrc.security.handler.HandlerSecurityLogin;
 import com.forsrc.security.tool.ToolToken;
-import lombok.SneakyThrows;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -25,17 +27,18 @@ import java.io.IOException;
 public class FilterLogin extends UsernamePasswordAuthenticationFilter {
 
   private final HandlerSecurityLogin handlerSecurityLogin;
+  @Setter
+  private HandlerExceptionResolver resolver;
 
   public FilterLogin(HandlerSecurityLogin handlerSecurityLogin) {
     this.handlerSecurityLogin = handlerSecurityLogin;
     super.setFilterProcessesUrl(ConfigSecurity.security.loginUrl);
   }
 
-  @SneakyThrows
   @Override
-  public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+  public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, CommonException {
     log.info("login start.");
-    return handlerSecurityLogin.login(request);
+    return handlerSecurityLogin.login(request, response);
   }
 
   @Override
