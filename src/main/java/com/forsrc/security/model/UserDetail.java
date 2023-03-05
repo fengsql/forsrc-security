@@ -12,7 +12,7 @@ import java.util.Collection;
 @EqualsAndHashCode(callSuper = false)
 public class UserDetail implements IUserDetails {
 
-  private int userId;
+  private Object userId;
 
   private int roleType;
 

@@ -149,7 +149,7 @@ public class ToolToken implements Serializable {
     if (username == null) {
       return null;
     }
-    int userId = Tool.toInt(claims.get(USERID));
+    Object userId = claims.get(USERID);
     int roleType = Tool.toInt(claims.get(ROLE));
     Object authors = claims.get(AUTHORITIES);
     List<GrantedAuthority> authorities = new ArrayList<>();
