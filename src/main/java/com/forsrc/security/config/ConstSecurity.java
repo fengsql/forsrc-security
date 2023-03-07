@@ -1,10 +1,5 @@
 package com.forsrc.security.config;
 
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
-
-@Data
-@Slf4j
 public class ConstSecurity {
 
   public static class role {
