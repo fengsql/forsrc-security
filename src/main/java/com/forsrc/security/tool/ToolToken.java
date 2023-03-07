@@ -43,8 +43,9 @@ public class ToolToken implements Serializable {
   private static final String BEARER = "Bearer ";
 
   /**
-   * 生成令牌
-   * @return 令牌
+   * 生成令牌。
+   * @param authentication 认证信息。
+   * @return 令牌。
    */
   public static String generateToken(Authentication authentication) {
     Map<String, Object> claims = new HashMap<>(5);
@@ -59,6 +60,7 @@ public class ToolToken implements Serializable {
 
   /**
    * 根据请求令牌获取授权信息。
+   * @param request 请求。
    * @return 授权信息。
    */
   public static Authentication getAuthenticationFromToken(HttpServletRequest request) {
@@ -71,7 +73,10 @@ public class ToolToken implements Serializable {
   }
 
   /**
-   * 验证令牌
+   * 验证令牌。
+   * @param token    令牌。
+   * @param username 用户名。
+   * @return true 有效，false 无效。
    */
   public static Boolean validateToken(String token, String username) {
     String userName = getUsernameFromToken(token);
@@ -79,7 +84,9 @@ public class ToolToken implements Serializable {
   }
 
   /**
-   * 刷新令牌
+   * 刷新令牌。
+   * @param token 令牌。
+   * @return 新的令牌。
    */
   public static String refreshToken(String token) {
     String refreshedToken;
@@ -97,9 +104,9 @@ public class ToolToken implements Serializable {
   }
 
   /**
-   * 判断令牌是否过期
+   * 判断令牌是否过期。
    * @param token 令牌
-   * @return 是否过期
+   * @return true 过期，false 未过期。
    */
   public static Boolean isTokenExpired(String token) {
     try {
@@ -114,9 +121,6 @@ public class ToolToken implements Serializable {
     }
   }
 
-  /**
-   * 获取请求token
-   */
   private static String getToken(HttpServletRequest request) {
     String token = request.getHeader(AUTHORIZATION);
     String tokenHead = BEARER;
@@ -136,7 +140,7 @@ public class ToolToken implements Serializable {
     if (userDetails == null) {
       return null;
     }
-//    log.info("userDetails: {}", ToolJson.toJson(userDetails));
+    //    log.info("userDetails: {}", ToolJson.toJson(userDetails));
     return new AuthenticationToken(userDetails, null, userDetails.getAuthorities(), token);
   }
 
@@ -179,7 +183,7 @@ public class ToolToken implements Serializable {
       claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
     } catch (Exception e) {
       claims = null;
-//      throw new ErrorException(Code.AUTHENTICATION_EXCEPTION);
+      //      throw new ErrorException(Code.AUTHENTICATION_EXCEPTION);
     }
     return claims;
   }

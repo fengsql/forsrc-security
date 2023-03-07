@@ -13,6 +13,7 @@ public class ToolSecurity {
 
   /**
    * 设置授权信息。
+   * @param request 请求。
    */
   public static void setAuthentication(HttpServletRequest request) {
     Authentication authentication = getAuthentication();
@@ -24,7 +25,8 @@ public class ToolSecurity {
   }
 
   /**
-   * 获取当前用户名
+   * 获取当前用户信息。
+   * @return 当前用户信息。
    */
   public static UserDetail getUserDetail() {
     Authentication authentication = getAuthentication();
@@ -35,7 +37,8 @@ public class ToolSecurity {
   }
 
   /**
-   * 获取当前用户名
+   * 获取当前用户名。
+   * @return 当前用户名。
    */
   public static String getUsername() {
     Authentication authentication = getAuthentication();
@@ -50,7 +53,9 @@ public class ToolSecurity {
   }
 
   /**
-   * 获取用户名
+   * 获取当前用户信息。
+   * @param authentication 认证信息。
+   * @return 当前用户信息。
    */
   public static UserDetail getUserDetail(Authentication authentication) {
     if (authentication == null) {
@@ -64,7 +69,8 @@ public class ToolSecurity {
   }
 
   /**
-   * 获取当前登录信息
+   * 获取当前认证信息
+   * @return 当前认证信息。
    */
   public static Authentication getAuthentication() {
     if (SecurityContextHolder.getContext() == null) {
