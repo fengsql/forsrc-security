@@ -123,15 +123,15 @@ public class ToolToken implements Serializable {
 
   private static String getToken(HttpServletRequest request) {
     String token = request.getHeader(AUTHORIZATION);
-    String tokenHead = BEARER;
     if (token == null) {
       token = request.getHeader(TOKEN);
-    } else if (token.contains(tokenHead)) {
-      token = token.substring(tokenHead.length());
+    } else if (token.startsWith(BEARER)) {
+      token = token.substring(BEARER.length());
     }
     if ("".equals(token)) {
       token = null;
     }
+//    log.info("getToken token: {}", token);
     return token;
   }
 

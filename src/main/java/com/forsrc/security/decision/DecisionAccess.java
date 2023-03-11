@@ -29,28 +29,12 @@ public class DecisionAccess implements AccessDecisionManager {
     }
     //所有访问都需要登录，不需要登录的不会进入此方法
     if (isAnonymous(authentication)) {
-      log.info("decide denied no login.");
+      log.info("denied access no login.");
       throw new AccessDeniedException("permission denied");
     }
-    for (ConfigAttribute configAttribute : configAttributes) {
-      String needRole = configAttribute.getAttribute();
-      log.debug("needRole: {} . authentication: {}", needRole, authentication);
-
-      //      if ("ROLE_ANONYMOUS".equalsIgnoreCase(needRole) && authentication instanceof UsernamePasswordAuthenticationToken) {
-      //        log.info("decide anonymous.");
-      //        return;
-      //      }
-
-      if (isRoleAll(needRole)) {  //所有角色都可以访问，已登录用户
-        log.debug("decide all.");
-        return;
-      }
-      for (GrantedAuthority grantedAuthority : authentication.getAuthorities()) {
-        if (isRole(needRole, grantedAuthority)) {
-          log.debug("decide role.");
-          return;
-        }
-      }
+    //决策角色是否可以访问
+    if (decideRole(authentication, configAttributes)) {
+      return;
     }
     //未定义的 url 拒绝访问，抛出异常。如果需要可以访问，注释掉下行。
     throw new AccessDeniedException("permission denied");
@@ -64,6 +48,25 @@ public class DecisionAccess implements AccessDecisionManager {
   @Override
   public boolean supports(Class<?> clazz) {
     return true;
+  }
+
+  private boolean decideRole(Authentication authentication, Collection<ConfigAttribute> configAttributes) {
+    for (ConfigAttribute configAttribute : configAttributes) {
+      String needRole = configAttribute.getAttribute();
+      log.debug("needRole: {} . authentication: {}", needRole, authentication);
+
+      if (isRoleAll(needRole)) {  //所有角色都可以访问，已登录用户
+        log.debug("permit access all role.");
+        return true;
+      }
+      for (GrantedAuthority grantedAuthority : authentication.getAuthorities()) {
+        if (isRole(needRole, grantedAuthority)) {
+          log.debug("permit access role: {}", needRole);
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   private boolean isAnonymous(Authentication authentication) {
