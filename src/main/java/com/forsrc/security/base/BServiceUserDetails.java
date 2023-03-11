@@ -49,7 +49,8 @@ public abstract class BServiceUserDetails<T> implements IServiceUserDetails {
 
   /**
    * 返回登录信息，可以使用自定义登录信息覆盖此方法。
-   * @return 返回用户对象。
+   * @param user 用户信息。
+   * @return 返回登录信息。
    */
   protected BLoginResponse getLoginResponse(T user) {
     return new BLoginResponse();
