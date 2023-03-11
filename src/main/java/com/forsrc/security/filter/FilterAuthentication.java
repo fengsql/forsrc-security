@@ -30,7 +30,7 @@ public class FilterAuthentication extends OncePerRequestFilter {
     String url = request.getServletPath();
     for (String path : ConfigSecurity.security.permit) {
       if (antPathMatcher.match(path, url)) {
-        log.debug("shouldNotFilter true");
+        log.info("shouldNotFilter true");
         return true;
       }
     }

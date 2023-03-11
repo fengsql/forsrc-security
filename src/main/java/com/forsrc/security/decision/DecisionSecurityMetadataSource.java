@@ -17,6 +17,7 @@ import java.util.Map;
 
 @Slf4j
 public class DecisionSecurityMetadataSource implements FilterInvocationSecurityMetadataSource {
+  private static final String role_login = "ROLE_LOGIN";
 
   private final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
@@ -34,23 +35,16 @@ public class DecisionSecurityMetadataSource implements FilterInvocationSecurityM
     }
     String url = filterInvocation.getRequestUrl();
     log.debug("getAttributes url: {}", url);
-
-    //    Authentication authentication = ToolSecurity.getAuthentication();
-    //    log.debug("getAttributes authentication: {}", authentication);
-
-    List<String> roles = new ArrayList<>();
-    addRole(url, roles);
+    List<String> roles = addRole(url);
     if (roles.size() > 0) {
-      String[] ary = roles.toArray(new String[0]);
-      log.debug("getAttributes roles: {}. size: {}", ary, ary.length);
-      return SecurityConfig.createList(ary);
+      return SecurityConfig.createList(roles.toArray(new String[0]));
     }
     if (ConfigSecurity.security.permitAccessUrlUndefine) {
       log.info("permit access url undefine. url: {}", url);
       return null;
     }
     log.warn("forbid access! url: {}", url);
-    return SecurityConfig.createList("ROLE_LOGIN");  //其余需要登录才可以访问
+    return SecurityConfig.createList(role_login);  //其余需要登录才可以访问
   }
 
   @Override
@@ -63,10 +57,12 @@ public class DecisionSecurityMetadataSource implements FilterInvocationSecurityM
     return true;
   }
 
-  private void addRole(String url, List<String> roles) {
+  private List<String> addRole(String url) {
+    List<String> roles = new ArrayList<>();
     if (!addMatchAll(url, roles)) {
       addMatchRole(url, roles);
     }
+    return roles;
   }
 
   private boolean addMatchAll(String url, List<String> roles) {
