@@ -37,7 +37,6 @@ public class FilterLogin extends UsernamePasswordAuthenticationFilter {
 
   @Override
   public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, CommonException {
-    log.info("login start.");
     return handlerSecurityLogin.login(request, response);
   }
 

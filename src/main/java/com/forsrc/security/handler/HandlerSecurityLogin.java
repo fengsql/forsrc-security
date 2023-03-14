@@ -41,6 +41,7 @@ public class HandlerSecurityLogin {
   private Authentication login(HttpServletRequest request, LoginUser loginUser) {
     UserDetails userDetails = getUserDetails(loginUser);
     AuthenticationToken authenticationToken = getAuthenticationToken(request, userDetails, loginUser);
+    log.info("start login. username: {}", loginUser.getUsername());
     //验证登录，调用 loadUserByUsername 方法
     Authentication authentication = authenticationManager.authenticate(authenticationToken);
     SecurityContextHolder.getContext().setAuthentication(authentication);  // 认证成功存储认证信息到上下文
@@ -60,7 +61,6 @@ public class HandlerSecurityLogin {
   }
 
   private void checkLoginUser(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser, String param) {
-
     if (loginUser == null) {
       log.warn("login fail! loginUser is null. param: {}", param);
       resolver.resolveException(request, response, null, new CommonException(Code.USER_LOGIN_FAIL, "login param is empty!"));
