@@ -33,8 +33,14 @@ public class HandlerSecurityLogin {
   public Authentication login(HttpServletRequest request, HttpServletResponse response) throws CommonException {
     String param = Tool.readStream(request.getInputStream());
     LoginUser loginUser = ToolJson.toBean(param, LoginUser.class);
-    checkLoginUser(request, response, loginUser, param);
-    checkVerifyCode(request, response, loginUser);
+    boolean ok = checkLoginParam(request, response, loginUser, param);
+    if (!ok) {
+      return null;
+    }
+    ok = checkVerifyCode(request, response, loginUser);
+    if (!ok) {
+      return null;
+    }
     return login(request, loginUser);
   }
 
@@ -60,40 +66,44 @@ public class HandlerSecurityLogin {
     return userDetail;
   }
 
-  private void checkLoginUser(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser, String param) {
+  private boolean checkLoginParam(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser, String param) {
     if (loginUser == null) {
       log.warn("login fail! loginUser is null. param: {}", param);
       resolver.resolveException(request, response, null, new CommonException(Code.USER_LOGIN_FAIL, "login param is empty!"));
-      return;
+      return false;
     }
     if (Tool.isNull(loginUser.getUsername())) {
       log.warn("login fail! username is null. param: {}", param);
       resolver.resolveException(request, response, null, new CommonException(Code.USER_LOGIN_FAIL, "username is empty!"));
-      return;
+      return false;
     }
     if (Tool.isNull(loginUser.getPassword())) {
       log.warn("login fail! password is null. param: {}", param);
       resolver.resolveException(request, response, null, new CommonException(Code.USER_LOGIN_FAIL, "password is empty!"));
+      return false;
     }
+    return true;
   }
 
-  private void checkVerifyCode(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) {
+  private boolean checkVerifyCode(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) {
     if (!ConfigSecurity.security.enableVerifyCode) {
-      return;
+      return true;
     }
     String verifyCode = loginUser.getVerifyCode();
     if (Tool.isNull(verifyCode)) {
       resolver.resolveException(request, response, null, new CommonException(Code.USER_LOGIN_FAIL, "request verifyCode is empty!"));
-      return;
+      return false;
     }
     String code = (String) request.getSession().getAttribute(Const.param_verifyCode);
     if (Tool.isNull(code)) {
       resolver.resolveException(request, response, null, new CommonException(Code.USER_LOGIN_FAIL, "please request verifyCode first!"));
-      return;
+      return false;
     }
     if (!verifyCode.trim().toLowerCase().equals(code.toLowerCase())) {
       resolver.resolveException(request, response, null, new CommonException(Code.USER_LOGIN_FAIL, "verifyCode not match!"));
+      return false;
     }
+    return true;
   }
 
 }
