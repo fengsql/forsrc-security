@@ -3,6 +3,7 @@ package com.forsrc.security.tool;
 import com.forsrc.common.constant.Code;
 import com.forsrc.common.exception.CommonException;
 import com.forsrc.common.tool.Tool;
+import com.forsrc.security.base.IUserDetails;
 import com.forsrc.security.config.ConfigSecurity;
 import com.forsrc.security.model.AuthenticationToken;
 import com.forsrc.security.model.UserDetail;
@@ -48,13 +49,23 @@ public class ToolToken implements Serializable {
    * @return 令牌。
    */
   public static String generateToken(Authentication authentication) {
-    Map<String, Object> claims = new HashMap<>(5);
     UserDetail userDetail = ToolSecurity.getUserDetail(authentication);
+    return generateToken(userDetail);
+  }
+
+  /**
+   * 生成令牌。
+   * @param userDetails 认证信息。
+   * @return 令牌。
+   */
+  public static String generateToken(IUserDetails userDetails) {
+    UserDetail userDetail = (UserDetail) userDetails;
+    Map<String, Object> claims = new HashMap<>(5);
     claims.put(USERID, userDetail.getUserId());
     claims.put(USERNAME, userDetail.getUsername());
     claims.put(ROLE, userDetail.getRoleType());
     claims.put(CREATED, new Date());
-    claims.put(AUTHORITIES, authentication.getAuthorities());
+    claims.put(AUTHORITIES, userDetail.getAuthorities());
     return generateToken(claims);
   }
 
