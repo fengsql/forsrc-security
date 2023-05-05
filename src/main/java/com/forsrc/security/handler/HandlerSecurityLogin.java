@@ -86,7 +86,7 @@ public class HandlerSecurityLogin {
   }
 
   private boolean checkVerifyCode(HttpServletRequest request, HttpServletResponse response, LoginUser loginUser) {
-    if (!ConfigSecurity.security.enableVerifyCode) {
+    if (!ConfigSecurity.website.verifycode.enable) {
       return true;
     }
     String verifyCode = loginUser.getVerifyCode();

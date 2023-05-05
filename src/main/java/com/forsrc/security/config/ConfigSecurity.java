@@ -19,10 +19,16 @@ public class ConfigSecurity {
   @Resource
   private ConfigSecurityAuthPath configSecurityAuthPath;
 
+  public static class website {
+
+    public static class verifycode {
+      public static boolean enable;
+    }
+  }
+
   public static class security {
 
     public static boolean enable;
-    public static boolean enableVerifyCode;
     public static String loginUrl;
     public static String logoutUrl;
     public static boolean permitAccessUrlUndefine;
@@ -47,16 +53,16 @@ public class ConfigSecurity {
     setSecurity_role(configSecurityAuthPath.getRole());
   }
 
+  // website-verifycode
+  @Value("${website.verifycode.enable:}")
+  public void set_website_verifycode_enable(String value) {
+    website.verifycode.enable = Tool.toBoolean(value);
+  }
+
   //security-enable
   @Value("${security.enable:false}")
   public void setSecurity_enable(String value) {
     security.enable = Tool.toBoolean(value);
-  }
-
-  //security-enableVerifyCode
-  @Value("${security.enable-verify-code:false}")
-  public void setSecurity_enableVerifyCode(String value) {
-    security.enableVerifyCode = Tool.toBoolean(value);
   }
 
   //security-loginUrl
