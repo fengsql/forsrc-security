@@ -27,7 +27,7 @@ public class ToolToken implements Serializable {
   /**
    * 用户名称
    */
-  private static final String USERNAME = Claims.SUBJECT;
+  private static final String SUBJECT = Claims.SUBJECT;
   private static final String USERID = "userId";
   private static final String ROLE = "role";
   /**
@@ -62,11 +62,29 @@ public class ToolToken implements Serializable {
     UserDetail userDetail = (UserDetail) userDetails;
     Map<String, Object> claims = new HashMap<>(5);
     claims.put(USERID, userDetail.getUserId());
-    claims.put(USERNAME, userDetail.getUsername());
+    claims.put(SUBJECT, userDetail.getUsername());
     claims.put(ROLE, userDetail.getRoleType());
     claims.put(CREATED, new Date());
     claims.put(AUTHORITIES, userDetail.getAuthorities());
     return generateToken(claims);
+  }
+
+  /**
+   * 解析 token 获取 subject，即用户名。
+   * @param token 令牌。
+   * @return subject。
+   */
+  public static String getUsername(String token) {
+    return getSubjectFromToken(token);
+  }
+
+  /**
+   * 解析 token 获取 userId，即用户编号。
+   * @param token 令牌。
+   * @return userId。
+   */
+  public static Object getUserId(String token) {
+    return getUserIdFromToken(token);
   }
 
   /**
@@ -90,7 +108,7 @@ public class ToolToken implements Serializable {
    * @return true 有效，false 无效。
    */
   public static Boolean validateToken(String token, String username) {
-    String userName = getUsernameFromToken(token);
+    String userName = getSubjectFromToken(token);
     return userName != null && userName.equals(username);
   }
 
@@ -142,7 +160,7 @@ public class ToolToken implements Serializable {
     if ("".equals(token)) {
       token = null;
     }
-//    log.info("getToken token: {}", token);
+    //    log.info("getToken token: {}", token);
     return token;
   }
 
@@ -151,7 +169,6 @@ public class ToolToken implements Serializable {
     if (userDetails == null) {
       return null;
     }
-    //    log.info("userDetails: {}", ToolJson.toJson(userDetails));
     return new AuthenticationToken(userDetails, null, userDetails.getAuthorities(), token);
   }
 
@@ -188,15 +205,15 @@ public class ToolToken implements Serializable {
    * @return 数据声明
    */
   private static Claims getClaimsFromToken(String token) {
-    Claims claims;
     try {
       String secret = ConfigSecurity.security.token.secret;
-      claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+      return Jwts.parser(). //
+        setSigningKey(secret). //
+        parseClaimsJws(token). //
+        getBody();
     } catch (Exception e) {
-      claims = null;
-      //      throw new ErrorException(Code.AUTHENTICATION_EXCEPTION);
+      return null;
     }
-    return claims;
   }
 
   /**
@@ -208,7 +225,11 @@ public class ToolToken implements Serializable {
     long expire = getExpire();
     Date expirationDate = new Date(System.currentTimeMillis() + expire);
     String secret = ConfigSecurity.security.token.secret;
-    return Jwts.builder().setClaims(claims).setExpiration(expirationDate).signWith(SignatureAlgorithm.HS512, secret).compact();
+    return Jwts.builder(). //
+      setClaims(claims).   //
+      setExpiration(expirationDate). //
+      signWith(SignatureAlgorithm.HS512, secret). //
+      compact();
   }
 
   private static long getExpire() {
@@ -228,18 +249,39 @@ public class ToolToken implements Serializable {
    * @param token 令牌
    * @return 用户名
    */
-  private static String getUsernameFromToken(String token) {
-    String username;
+  private static String getSubjectFromToken(String token) {
+    if (token == null) {
+      return null;
+    }
     try {
       Claims claims = getClaimsFromToken(token);
       if (claims == null) {
         return null;
       }
-      username = claims.getSubject();
+      return claims.getSubject();
     } catch (Exception e) {
-      username = null;
+      return null;
     }
-    return username;
+  }
+
+  /**
+   * 从令牌中获取用户编号
+   * @param token 令牌
+   * @return 用户编号
+   */
+  private static Object getUserIdFromToken(String token) {
+    if (token == null) {
+      return null;
+    }
+    try {
+      Claims claims = getClaimsFromToken(token);
+      if (claims == null) {
+        return null;
+      }
+      return claims.get(USERID);
+    } catch (Exception e) {
+      return null;
+    }
   }
 
 }
