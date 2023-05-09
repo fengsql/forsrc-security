@@ -17,7 +17,7 @@ public class FilterAuthentication extends OncePerRequestFilter {
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-    ToolSecurity.setAuthentication(request);
+    setAuthentication(request);
     filterChain.doFilter(request, response);
   }
 
@@ -31,9 +31,14 @@ public class FilterAuthentication extends OncePerRequestFilter {
     for (String path : ConfigSecurity.security.permit) {
       if (antPathMatcher.match(path, url)) {
         log.debug("permit true.");
+        setAuthentication(request);  //如果通过将不经过过滤器，需要设置身份信息
         return true;
       }
     }
     return false;
+  }
+
+  private void setAuthentication(HttpServletRequest request) {
+    ToolSecurity.setAuthentication(request);
   }
 }

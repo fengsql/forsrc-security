@@ -42,6 +42,12 @@ public class ToolToken implements Serializable {
   private static final String AUTHORIZATION = "Authorization";
   private static final String TOKEN = "token";
   private static final String BEARER = "Bearer ";
+  // websocket
+  private static final String NAME_CONNECTION = "connection";
+  private static final String CONNECTION_UPGRADE = "upgrade";
+  private static final String NAME_UPGRADE = "upgrade";
+  private static final String UPGRADE_WEBSOCKET = "websocket";
+  private static final String SEC_WEBSOCKET_PROTOCOL = "sec-websocket-protocol";
 
   /**
    * 生成令牌。
@@ -151,6 +157,27 @@ public class ToolToken implements Serializable {
   }
 
   private static String getToken(HttpServletRequest request) {
+    String token = getTokenByHttp(request);
+    if (Tool.isNull(token)) {
+      token = getTokenByWebsocket(request);
+    }
+    return token;
+  }
+
+  private static String getTokenByWebsocket(HttpServletRequest request) {
+    String token = request.getHeader(SEC_WEBSOCKET_PROTOCOL);
+    if (token == null) {
+      return null;
+    }
+    String connection = request.getHeader(NAME_CONNECTION);
+    String upgrade = request.getHeader(NAME_UPGRADE);
+    if (Tool.equalIgnore(connection, CONNECTION_UPGRADE) && Tool.equalIgnore(upgrade, UPGRADE_WEBSOCKET)) {
+      return token;
+    }
+    return null;
+  }
+
+  private static String getTokenByHttp(HttpServletRequest request) {
     String token = request.getHeader(AUTHORIZATION);
     if (token == null) {
       token = request.getHeader(TOKEN);
@@ -160,7 +187,6 @@ public class ToolToken implements Serializable {
     if ("".equals(token)) {
       token = null;
     }
-    //    log.info("getToken token: {}", token);
     return token;
   }
 
