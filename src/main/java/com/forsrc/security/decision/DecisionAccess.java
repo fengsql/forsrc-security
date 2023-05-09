@@ -29,7 +29,8 @@ public class DecisionAccess implements AccessDecisionManager {
     }
     //所有访问都需要登录，不需要登录的不会进入此方法
     if (isAnonymous(authentication)) {
-      log.info("access denied no login.");
+      Object principal = authentication.getPrincipal();
+      log.info("access denied no login. principal: {}", principal);
       throw new AccessDeniedException("permission denied");
     }
     //决策角色是否可以访问

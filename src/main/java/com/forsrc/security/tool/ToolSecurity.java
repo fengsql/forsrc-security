@@ -16,11 +16,7 @@ public class ToolSecurity {
    * @param request 请求。
    */
   public static void setAuthentication(HttpServletRequest request) {
-    Authentication authentication = getAuthentication();
-    if (authentication != null) {
-      return;
-    }
-    authentication = ToolToken.getAuthenticationFromToken(request); // 获取令牌并根据令牌获取授权信息
+    Authentication authentication = getAuthentication(request);
     SecurityContextHolder.getContext().setAuthentication(authentication); // 设置授权信息到上下文
   }
 
@@ -68,11 +64,19 @@ public class ToolSecurity {
     return null;
   }
 
+  private static Authentication getAuthentication(HttpServletRequest request) {
+    Authentication authentication = getAuthentication();
+    if (authentication == null) {
+      authentication = ToolToken.getAuthenticationFromToken(request); // 获取令牌并根据令牌获取授权信息
+    }
+    return authentication;
+  }
+
   /**
    * 获取当前认证信息
    * @return 当前认证信息。
    */
-  public static Authentication getAuthentication() {
+  private static Authentication getAuthentication() {
     if (SecurityContextHolder.getContext() == null) {
       return null;
     }

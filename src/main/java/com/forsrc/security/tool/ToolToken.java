@@ -99,6 +99,9 @@ public class ToolToken implements Serializable {
    * @return 授权信息。
    */
   public static Authentication getAuthenticationFromToken(HttpServletRequest request) {
+    if (request == null) {
+      return null;
+    }
     String token = getToken(request);
     if (token == null) {
       //      throw new ErrorException(Code.AUTHENTICATION_EXCEPTION);
@@ -171,6 +174,7 @@ public class ToolToken implements Serializable {
     }
     String connection = request.getHeader(NAME_CONNECTION);
     String upgrade = request.getHeader(NAME_UPGRADE);
+//    log.debug("connection: {}. upgrade: {}", connection, upgrade);
     if (Tool.equalIgnore(connection, CONNECTION_UPGRADE) && Tool.equalIgnore(upgrade, UPGRADE_WEBSOCKET)) {
       return token;
     }
