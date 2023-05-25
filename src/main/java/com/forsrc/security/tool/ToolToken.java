@@ -93,6 +93,14 @@ public class ToolToken implements Serializable {
     return getUserIdFromToken(token);
   }
 
+  public static String getToken(HttpServletRequest request) {
+    String token = getTokenByHttp(request);
+    if (Tool.isNull(token)) {
+      token = getTokenByWebsocket(request);
+    }
+    return token;
+  }
+
   /**
    * 根据请求令牌获取授权信息。
    * @param request 请求。
@@ -104,10 +112,31 @@ public class ToolToken implements Serializable {
     }
     String token = getToken(request);
     if (token == null) {
-      //      throw new ErrorException(Code.AUTHENTICATION_EXCEPTION);
       return null;
     }
     return newAuthentication(token);
+  }
+
+  /**
+   * 刷新令牌。
+   * @param request 请求。
+   * @return 新的令牌。
+   */
+  public static String refreshToken(HttpServletRequest request) {
+    String token = getToken(request);
+    if (Tool.isNull(token)) {
+      return null;
+    }
+    try {
+      Claims claims = getClaimsFromToken(token);
+      if (claims == null) {
+        return null;
+      }
+      claims.put(CREATED, new Date());
+      return generateToken(claims);
+    } catch (Exception e) {
+      return null;
+    }
   }
 
   /**
@@ -119,26 +148,6 @@ public class ToolToken implements Serializable {
   public static Boolean validateToken(String token, String username) {
     String userName = getSubjectFromToken(token);
     return userName != null && userName.equals(username);
-  }
-
-  /**
-   * 刷新令牌。
-   * @param token 令牌。
-   * @return 新的令牌。
-   */
-  public static String refreshToken(String token) {
-    String refreshedToken;
-    try {
-      Claims claims = getClaimsFromToken(token);
-      if (claims == null) {
-        return null;
-      }
-      claims.put(CREATED, new Date());
-      refreshedToken = generateToken(claims);
-    } catch (Exception e) {
-      refreshedToken = null;
-    }
-    return refreshedToken;
   }
 
   /**
@@ -159,14 +168,6 @@ public class ToolToken implements Serializable {
     }
   }
 
-  private static String getToken(HttpServletRequest request) {
-    String token = getTokenByHttp(request);
-    if (Tool.isNull(token)) {
-      token = getTokenByWebsocket(request);
-    }
-    return token;
-  }
-
   private static String getTokenByWebsocket(HttpServletRequest request) {
     String token = request.getHeader(SEC_WEBSOCKET_PROTOCOL);
     if (token == null) {
@@ -174,7 +175,7 @@ public class ToolToken implements Serializable {
     }
     String connection = request.getHeader(NAME_CONNECTION);
     String upgrade = request.getHeader(NAME_UPGRADE);
-//    log.debug("connection: {}. upgrade: {}", connection, upgrade);
+    //    log.debug("connection: {}. upgrade: {}", connection, upgrade);
     if (Tool.equalIgnore(connection, CONNECTION_UPGRADE) && Tool.equalIgnore(upgrade, UPGRADE_WEBSOCKET)) {
       return token;
     }
